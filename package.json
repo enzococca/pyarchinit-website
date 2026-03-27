@@ -1,0 +1,43 @@
+{
+  "name": "pyarchinit-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@paypal/react-paypal-js": "^9.1.0",
+    "@prisma/client": "^7.6.0",
+    "@tiptap/extension-code-block-lowlight": "^3.21.0",
+    "@tiptap/extension-image": "^3.21.0",
+    "@tiptap/react": "^3.21.0",
+    "@tiptap/starter-kit": "^3.21.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.7.0",
+    "next": "14.2.35",
+    "next-auth": "^5.0.0-beta.30",
+    "prisma": "^7.6.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "sharp": "^0.34.5",
+    "stripe": "^21.0.1",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.37",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
