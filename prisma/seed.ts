@@ -31,7 +31,24 @@ async function main() {
     });
   }
 
-  console.log("Seed completed: admin user + default settings");
+  // Forum categories
+  const categories = [
+    { name: "Generale", slug: "generale", description: "Discussioni generali su pyArchInit", order: 0, color: "#00D4AA" },
+    { name: "Supporto Tecnico", slug: "supporto", description: "Problemi tecnici e richieste di aiuto", order: 1, color: "#D4712A" },
+    { name: "Sviluppo", slug: "sviluppo", description: "Discussioni sullo sviluppo del plugin", order: 2, color: "#8B7355" },
+    { name: "Showcase", slug: "showcase", description: "Condividi i tuoi progetti e risultati", order: 3, color: "#22C55E" },
+    { name: "Proposte", slug: "proposte", description: "Proponi nuove funzionalità e miglioramenti", order: 4, color: "#3B82F6" },
+  ];
+
+  for (const cat of categories) {
+    await prisma.forumCategory.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: cat,
+    });
+  }
+
+  console.log("Seed completed: admin user + default settings + forum categories");
 }
 
 main()
