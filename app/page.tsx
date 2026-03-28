@@ -89,19 +89,16 @@ const codeSnippets = [
 /* ═══════════════════════════════════════════
    THOUGHT BUBBLES - Real dev thoughts
    ═══════════════════════════════════════════ */
-const thoughtsLeft = [
+const allThoughts = [
   { text: "Matrice di Harris → grafo diretto...", icon: "🔗" },
-  { text: "Servono le relazioni tra US", icon: "📐" },
-  { text: "Plugin QGIS: tabs → modules → db", icon: "🧩" },
-  { text: "Export PDF per le schede US", icon: "📄" },
-  { text: "Periodizzazione automatica?", icon: "⏳" },
-];
-
-const thoughtsRight = [
   { text: "GIS layer per fase cronologica", icon: "🗺️" },
+  { text: "Servono le relazioni tra US", icon: "📐" },
   { text: "Connessione PostgreSQL → ORM", icon: "🗄️" },
+  { text: "Plugin QGIS: tabs → modules → db", icon: "🧩" },
   { text: "Fotogrammetria → CloudCompare", icon: "📷" },
+  { text: "Export PDF per le schede US", icon: "📄" },
   { text: "Template GNA per la consegna", icon: "📋" },
+  { text: "Periodizzazione automatica?", icon: "⏳" },
   { text: "WebODM per le ortofoto drone", icon: "🛸" },
 ];
 
@@ -229,49 +226,51 @@ function Keyboard({ activeKey }: { activeKey: string }) {
 function ThoughtCloud({
   thought,
   side,
-  delay,
+  topPct,
+  visible,
 }: {
   thought: { text: string; icon: string };
   side: "left" | "right";
-  delay: number;
+  topPct: number;
+  visible: boolean;
 }) {
   return (
     <div
-      className={`absolute ${side === "left" ? "left-3 md:left-8" : "right-3 md:right-8"} pointer-events-none`}
+      className="absolute pointer-events-none"
       style={{
-        top: `${20 + (delay % 5) * 14}%`,
-        animationDelay: `${delay * 4}s`,
+        left: side === "left" ? undefined : undefined,
+        right: side === "right" ? "12px" : undefined,
+        ...(side === "left" ? { left: "12px" } : {}),
+        top: `${topPct}%`,
+        transition: "opacity 0.8s ease, transform 0.8s ease",
+        opacity: visible ? 0.9 : 0,
+        transform: visible ? "translateY(0) scale(1)" : "translateY(10px) scale(0.92)",
       }}
     >
       <div
-        className="animate-cloud-float"
-        style={{ animationDelay: `${delay * 4}s` }}
+        className={`
+          relative bg-[#0d1117]/90 backdrop-blur-sm
+          border border-[#00D4AA]/15
+          rounded-2xl px-4 py-2.5 max-w-[200px] md:max-w-[240px]
+          shadow-[0_4px_20px_rgba(0,212,170,0.08)]
+        `}
       >
+        <div className="flex items-start gap-2">
+          <span className="text-sm shrink-0 mt-0.5">{thought.icon}</span>
+          <p className="text-[11px] text-[#a0b0c0] leading-relaxed font-mono">
+            {thought.text}
+          </p>
+        </div>
+        {/* Tail dots */}
         <div
-          className={`
-            relative bg-[#0d1117]/90 backdrop-blur-sm
-            border border-[#00D4AA]/15
-            rounded-2xl px-4 py-2.5 max-w-[200px] md:max-w-[240px]
-            shadow-[0_4px_20px_rgba(0,212,170,0.08)]
-          `}
+          className={`absolute top-1/2 ${side === "left" ? "-right-2" : "-left-2"}`}
         >
-          <div className="flex items-start gap-2">
-            <span className="text-sm shrink-0 mt-0.5">{thought.icon}</span>
-            <p className="text-[11px] text-[#a0b0c0] leading-relaxed font-mono">
-              {thought.text}
-            </p>
-          </div>
-          {/* Tail dots */}
-          <div
-            className={`absolute top-1/2 ${side === "left" ? "-right-2" : "-left-2"}`}
-          >
-            <div className="w-2 h-2 rounded-full bg-[#0d1117]/80 border border-[#00D4AA]/10" />
-          </div>
-          <div
-            className={`absolute top-1/2 ${side === "left" ? "-right-4" : "-left-4"} mt-1`}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-[#0d1117]/60 border border-[#00D4AA]/5" />
-          </div>
+          <div className="w-2 h-2 rounded-full bg-[#0d1117]/80 border border-[#00D4AA]/10" />
+        </div>
+        <div
+          className={`absolute top-1/2 ${side === "left" ? "-right-4" : "-left-4"} mt-1`}
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-[#0d1117]/60 border border-[#00D4AA]/5" />
         </div>
       </div>
     </div>
@@ -282,6 +281,13 @@ function ThoughtCloud({
    MAIN LANDING PAGE
    ═══════════════════════════════════════════ */
 
+interface BubbleState {
+  thoughtIdx: number;
+  side: "left" | "right";
+  topPct: number;
+  visible: boolean;
+}
+
 export default function LandingPage() {
   const router = useRouter();
   const [transitioning, setTransitioning] = useState(false);
@@ -290,6 +296,13 @@ export default function LandingPage() {
   const [snippetIdx, setSnippetIdx] = useState(0);
   const [activeKey, setActiveKey] = useState("");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [bubble, setBubble] = useState<BubbleState>({
+    thoughtIdx: 0,
+    side: "left",
+    topPct: 30,
+    visible: false,
+  });
+  const bubbleIdxRef = useRef(0);
 
   const currentSnippet = codeSnippets[snippetIdx];
   const totalChars = useMemo(
@@ -301,6 +314,34 @@ export default function LandingPage() {
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 100);
     return () => clearTimeout(t);
+  }, []);
+
+  // Bubble cycling: one at a time, random side & position
+  useEffect(() => {
+    const sides: ("left" | "right")[] = ["left", "right"];
+    const topPositions = [18, 28, 38, 48, 58, 68];
+
+    function showNext() {
+      const idx = bubbleIdxRef.current % allThoughts.length;
+      const side = sides[Math.floor(Math.random() * 2)];
+      const topPct = topPositions[Math.floor(Math.random() * topPositions.length)];
+      setBubble({ thoughtIdx: idx, side, topPct, visible: true });
+
+      // Hide after 4 seconds
+      const hideTimer = setTimeout(() => {
+        setBubble((prev) => ({ ...prev, visible: false }));
+        bubbleIdxRef.current += 1;
+        // Show next after brief pause
+        const nextTimer = setTimeout(showNext, 1200);
+        return () => clearTimeout(nextTimer);
+      }, 4000);
+
+      return () => clearTimeout(hideTimer);
+    }
+
+    // Start first bubble after 1.5s
+    const startTimer = setTimeout(showNext, 1500);
+    return () => clearTimeout(startTimer);
   }, []);
 
   // Typing engine
@@ -361,15 +402,13 @@ export default function LandingPage() {
         <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMC4xNSIvPjwvc3ZnPg==')]" />
       </div>
 
-      {/* Left thought bubbles */}
-      {thoughtsLeft.map((t, i) => (
-        <ThoughtCloud key={`l${i}`} thought={t} side="left" delay={i} />
-      ))}
-
-      {/* Right thought bubbles */}
-      {thoughtsRight.map((t, i) => (
-        <ThoughtCloud key={`r${i}`} thought={t} side="right" delay={i + 0.5} />
-      ))}
+      {/* Single cycling thought bubble */}
+      <ThoughtCloud
+        thought={allThoughts[bubble.thoughtIdx]}
+        side={bubble.side}
+        topPct={bubble.topPct}
+        visible={bubble.visible}
+      />
 
       {/* Main content - Monitor + Keyboard */}
       <div
@@ -465,31 +504,6 @@ export default function LandingPage() {
         }
         .animate-blink {
           animation: blink 1s step-end infinite;
-        }
-        @keyframes cloud-float {
-          0% {
-            opacity: 0;
-            transform: translateY(10px) scale(0.9);
-          }
-          8% {
-            opacity: 0.9;
-            transform: translateY(0) scale(1);
-          }
-          30% {
-            opacity: 0.9;
-            transform: translateY(-5px) scale(1);
-          }
-          42% {
-            opacity: 0;
-            transform: translateY(-15px) scale(0.95);
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-        .animate-cloud-float {
-          animation: cloud-float 20s ease-in-out infinite;
-          opacity: 0;
         }
         @keyframes gentle-bounce {
           0%, 100% { transform: translateY(0); }
