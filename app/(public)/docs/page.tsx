@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { BookOpen } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { BookOpen, FileText, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { DocsSidebar, DocsSidebarMobile } from "@/components/public/docs-sidebar";
 
@@ -21,21 +23,48 @@ export default async function DocsPage() {
   });
 
   const totalPages = sections.reduce((sum, s) => sum + s.pages.length, 0);
+  const firstPage = sections[0]?.pages[0];
 
   return (
     <main>
       {/* Header */}
-      <section className="bg-gradient-to-br from-primary via-[#0d1524] to-[#0a1020] py-16 border-b border-sand/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-teal font-mono text-xs tracking-widest uppercase mb-3">
-            Open Source
-          </p>
+      <section className="relative bg-gradient-to-br from-primary via-[#0d1524] to-[#0a1020] py-16 border-b border-sand/10 overflow-hidden">
+        {/* Decorative grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#00D4AA 1px, transparent 1px), linear-gradient(90deg, #00D4AA 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="flex items-center gap-3 mb-4">
+            <Image
+              src="/images/logo_pyarchinit_official.png"
+              alt="pyArchInit"
+              width={40}
+              height={40}
+              className="drop-shadow-lg"
+            />
+            <p className="text-teal font-mono text-xs tracking-widest uppercase">
+              Documentazione
+            </p>
+          </div>
           <h1 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-3">
-            Documentazione
+            Guide &amp; Tutorial
           </h1>
-          <p className="text-sand/60 text-base max-w-xl">
-            Guide, tutorial e riferimento tecnico completo per pyArchInit.
+          <p className="text-sand/60 text-base max-w-xl mb-6">
+            {totalPages} guide passo-passo per imparare ad usare pyArchInit: dalla configurazione iniziale alla gestione avanzata dei dati di scavo.
           </p>
+          {firstPage && (
+            <Link
+              href={`/docs/${firstPage.slug}`}
+              className="inline-flex items-center gap-2 bg-teal text-primary font-mono text-sm font-bold px-5 py-2.5 rounded-full hover:bg-teal/90 transition"
+            >
+              Inizia dal tutorial 1 <ArrowRight size={14} />
+            </Link>
+          )}
         </div>
       </section>
 
@@ -43,27 +72,15 @@ export default async function DocsPage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center text-sand/30">
             <BookOpen size={48} className="mx-auto mb-4 opacity-40" />
-            <p className="text-lg">La documentazione è in fase di sviluppo.</p>
-            <p className="text-sm mt-2">
-              Nel frattempo, consulta il{" "}
-              <a
-                href="https://github.com/pyarchinit"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-teal hover:text-teal/80 transition-colors"
-              >
-                repository GitHub
-              </a>
-              .
-            </p>
+            <p className="text-lg">La documentazione e in fase di sviluppo.</p>
           </div>
         </section>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex gap-10">
-            {/* Left sidebar — hidden on mobile */}
+            {/* Left sidebar */}
             <aside className="hidden lg:block w-64 shrink-0">
-              <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-sand/10">
+              <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2">
                 <DocsSidebar sections={sections} />
               </div>
             </aside>
@@ -75,66 +92,60 @@ export default async function DocsPage() {
                 <DocsSidebarMobile sections={sections} />
               </div>
 
-              {/* Welcome panel */}
-              <div className="bg-code-bg rounded-card border border-sand/10 p-8 sm:p-12">
-                <div className="max-w-2xl">
-                  <div className="w-12 h-12 rounded-xl bg-teal/10 flex items-center justify-center mb-6">
-                    <BookOpen size={24} className="text-teal" />
-                  </div>
-                  <h2 className="text-2xl font-mono font-bold text-sand mb-4">
-                    Benvenuto nella documentazione
-                  </h2>
-                  <p className="text-sand/60 mb-6 leading-relaxed">
-                    Questa documentazione copre tutto ciò che devi sapere su
-                    pyArchInit: dall&apos;installazione alle guide avanzate,
-                    passando per tutorial passo-passo.
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-                    <div className="bg-primary/50 rounded-lg p-3 border border-sand/10">
-                      <p className="text-2xl font-mono font-bold text-teal">
-                        {sections.length}
-                      </p>
-                      <p className="text-xs text-sand/50 mt-1">Sezioni</p>
-                    </div>
-                    <div className="bg-primary/50 rounded-lg p-3 border border-sand/10">
-                      <p className="text-2xl font-mono font-bold text-teal">
-                        {totalPages}
-                      </p>
-                      <p className="text-xs text-sand/50 mt-1">Pagine</p>
-                    </div>
-                  </div>
+              {/* Tutorial grid */}
+              <div className="space-y-8">
+                {sections.map((section) => (
+                  <div key={section.id}>
+                    <h2 className="text-sm font-mono text-teal uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <BookOpen size={14} />
+                      {section.title}
+                      <span className="text-sand/20 font-normal">
+                        ({section.pages.length})
+                      </span>
+                    </h2>
 
-                  <p className="text-sm text-sand/40 mb-4">
-                    Sezioni disponibili:
-                  </p>
-                  <div className="space-y-3">
-                    {sections.map((section) => (
-                      <div key={section.id}>
-                        <h3 className="text-xs font-mono text-teal uppercase tracking-widest mb-2">
-                          {section.title}
-                        </h3>
-                        {section.pages.length > 0 ? (
-                          <ul className="space-y-1 ml-3 border-l border-sand/10 pl-3">
-                            {section.pages.map((page) => (
-                              <li key={page.id}>
-                                <a
-                                  href={`/docs/${page.slug}`}
-                                  className="text-sm text-sand/50 hover:text-teal transition-colors"
-                                >
-                                  {page.title}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-xs text-sand/20 italic ml-3 pl-3">
-                            Nessuna pagina ancora.
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {section.pages.map((page, idx) => (
+                        <Link
+                          key={page.id}
+                          href={`/docs/${page.slug}`}
+                          className="group flex items-start gap-3 bg-code-bg border border-sand/8 hover:border-teal/25 rounded-lg p-4 transition-all hover:bg-code-bg/80"
+                        >
+                          <span className="text-xs font-mono text-ochre/50 mt-0.5 w-6 text-right shrink-0">
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
+                          <div className="min-w-0">
+                            <h3 className="text-sm text-sand/80 group-hover:text-teal transition-colors font-medium leading-snug">
+                              {page.title
+                                .replace(/^PyArchInit\s*-\s*/i, "")
+                                .replace(/^Tutorial\s*\d+:\s*/i, "")}
+                            </h3>
+                          </div>
+                          <ArrowRight
+                            size={14}
+                            className="text-sand/15 group-hover:text-teal/50 transition-colors ml-auto mt-0.5 shrink-0"
+                          />
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ))}
+              </div>
+
+              {/* Quick start CTA */}
+              <div className="mt-12 bg-gradient-to-r from-teal/5 to-terracotta/5 border border-sand/8 rounded-card p-6 text-center">
+                <p className="text-sand/60 text-sm mb-3">
+                  Non sai da dove iniziare?
+                </p>
+                {firstPage && (
+                  <Link
+                    href={`/docs/${firstPage.slug}`}
+                    className="inline-flex items-center gap-2 text-teal font-mono text-sm hover:underline"
+                  >
+                    <FileText size={14} />
+                    Parti dalla Guida alla Configurazione
+                  </Link>
+                )}
               </div>
             </div>
           </div>

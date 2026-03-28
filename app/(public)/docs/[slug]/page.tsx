@@ -134,7 +134,7 @@ export default async function DocPageDetail({ params }: Props) {
 
             {/* Prose content */}
             <article
-              className="prose prose-invert max-w-none prose-headings:font-mono prose-headings:text-teal prose-p:text-sand/80 prose-a:text-teal prose-a:no-underline hover:prose-a:underline prose-strong:text-sand prose-code:text-teal prose-pre:bg-code-bg prose-li:text-sand/70 prose-img:rounded-lg"
+              className="docs-prose prose prose-invert max-w-none prose-lg prose-img:rounded-lg"
               dangerouslySetInnerHTML={{ __html: processedContent }}
             />
 

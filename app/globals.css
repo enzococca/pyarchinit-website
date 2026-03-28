@@ -20,3 +20,179 @@
     border-radius: 4px;
   }
 }
+
+/* ═══════════════════════════════════════════
+   DOCUMENTATION PROSE - "Archaeological Codex"
+   ═══════════════════════════════════════════ */
+@layer components {
+  .docs-prose {
+    --tw-prose-body: #c4b8a4;
+    --tw-prose-headings: #00D4AA;
+    --tw-prose-links: #00D4AA;
+    --tw-prose-bold: #E8DCC8;
+    --tw-prose-code: #00D4AA;
+    --tw-prose-pre-bg: #0d1117;
+    --tw-prose-counters: #8B7355;
+    --tw-prose-bullets: #8B7355;
+    --tw-prose-hr: #1a2030;
+    --tw-prose-quotes: #D4712A;
+    --tw-prose-quote-borders: #D4712A;
+    --tw-prose-captions: #8B7355;
+    --tw-prose-th-borders: #1a2030;
+    --tw-prose-td-borders: #141c2a;
+  }
+
+  /* Headings with archaeological catalog style */
+  .docs-prose :where(h2):not(:where([class~="not-prose"] *)) {
+    position: relative;
+    padding-bottom: 0.75rem;
+    margin-top: 2.5rem;
+    border-bottom: 1px solid rgba(0, 212, 170, 0.15);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.01em;
+  }
+
+  .docs-prose :where(h2):not(:where([class~="not-prose"] *))::before {
+    content: "§";
+    position: absolute;
+    left: -1.5rem;
+    color: rgba(0, 212, 170, 0.25);
+    font-size: 0.85em;
+  }
+
+  .docs-prose :where(h3):not(:where([class~="not-prose"] *)) {
+    font-family: 'JetBrains Mono', monospace;
+    color: #E8DCC8;
+    font-size: 1.05rem;
+    margin-top: 2rem;
+  }
+
+  .docs-prose :where(h3):not(:where([class~="not-prose"] *))::before {
+    content: "›";
+    margin-right: 0.5rem;
+    color: rgba(212, 113, 42, 0.5);
+    font-weight: bold;
+  }
+
+  /* Code blocks styled like excavation records */
+  .docs-prose :where(pre):not(:where([class~="not-prose"] *)) {
+    background: #0d1117 !important;
+    border: 1px solid rgba(0, 212, 170, 0.1);
+    border-radius: 8px;
+    padding: 1.25rem;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .docs-prose :where(pre):not(:where([class~="not-prose"] *))::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00D4AA, #D4712A, #8B7355);
+    border-radius: 8px 8px 0 0;
+    opacity: 0.6;
+  }
+
+  .docs-prose :where(code):not(:where(pre *)):not(:where([class~="not-prose"] *)) {
+    background: rgba(0, 212, 170, 0.08);
+    border: 1px solid rgba(0, 212, 170, 0.15);
+    border-radius: 4px;
+    padding: 0.15em 0.4em;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+
+  /* Blockquotes as archaeological notes */
+  .docs-prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+    border-left: 3px solid #D4712A;
+    background: rgba(212, 113, 42, 0.05);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    font-style: normal;
+  }
+
+  .docs-prose :where(blockquote p):not(:where([class~="not-prose"] *)) {
+    color: #c4b0a0;
+  }
+
+  /* Tables like data sheets */
+  .docs-prose :where(table):not(:where([class~="not-prose"] *)) {
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .docs-prose :where(thead):not(:where([class~="not-prose"] *)) {
+    background: rgba(0, 212, 170, 0.06);
+  }
+
+  .docs-prose :where(thead th):not(:where([class~="not-prose"] *)) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #00D4AA;
+    border-bottom: 1px solid rgba(0, 212, 170, 0.15);
+  }
+
+  .docs-prose :where(tbody tr):not(:where([class~="not-prose"] *)):nth-child(even) {
+    background: rgba(139, 115, 85, 0.03);
+  }
+
+  .docs-prose :where(td):not(:where([class~="not-prose"] *)) {
+    border-color: rgba(139, 115, 85, 0.1);
+  }
+
+  /* Images with archaeological frame */
+  .docs-prose :where(img):not(:where([class~="not-prose"] *)) {
+    border-radius: 8px;
+    border: 1px solid rgba(139, 115, 85, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .docs-prose :where(figcaption):not(:where([class~="not-prose"] *)) {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: #8B7355;
+  }
+
+  /* Lists with custom markers */
+  .docs-prose :where(ul > li):not(:where([class~="not-prose"] *))::marker {
+    color: #D4712A;
+  }
+
+  .docs-prose :where(ol > li):not(:where([class~="not-prose"] *))::marker {
+    color: #00D4AA;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+
+  /* Links with subtle underline animation */
+  .docs-prose :where(a):not(:where([class~="not-prose"] *)) {
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0, 212, 170, 0.3);
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .docs-prose :where(a):not(:where([class~="not-prose"] *)):hover {
+    border-bottom-color: #00D4AA;
+  }
+
+  /* HR as stratigraphic layer separator */
+  .docs-prose :where(hr):not(:where([class~="not-prose"] *)) {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #8B7355, transparent);
+    margin: 2.5rem 0;
+  }
+
+  /* Strong emphasis */
+  .docs-prose :where(strong):not(:where([class~="not-prose"] *)) {
+    color: #E8DCC8;
+    font-weight: 600;
+  }
+}
