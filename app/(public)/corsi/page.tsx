@@ -3,14 +3,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { syncFlyoverCourses } from "@/lib/flyover-sync";
-import { BookOpen, ExternalLink } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Corsi | pyArchInit",
   description: "Corsi di formazione su Python, GIS, QGIS e archeologia digitale.",
 };
 
-const CATEGORIES = ["Tutti", "Python", "GIS", "QGIS", "pyArchInit", "Scavo", "Archeologia", "Drone", "Restauro", "Architettura"];
+const CATEGORIES = ["Tutti", "Python", "GIS", "QGIS", "pyArchInit", "Scavo", "Archeologia"];
 
 // Throttled sync: at most once per hour per server instance
 const SYNC_INTERVAL = 60 * 60 * 1000; // 1 hour
@@ -137,12 +137,6 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                     <span className="text-xs px-2 py-0.5 rounded-full bg-sand/5 text-sand/40">
                       {course.category}
                     </span>
-                    {course.slug.startsWith("flyover-") && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-ochre/15 text-ochre border border-ochre/20 flex items-center gap-1">
-                        <ExternalLink size={10} />
-                        Flyover Academy
-                      </span>
-                    )}
                   </div>
                   <h2 className="font-mono font-bold text-sand text-lg mb-2 leading-snug flex-1">
                     <Link
@@ -172,6 +166,22 @@ export default async function CorsiPage({ searchParams }: PageProps) {
           })}
         </div>
       )}
+
+      {/* Flyover Academy banner */}
+      <div className="mt-12 bg-code-bg rounded-card p-8 text-center">
+        <h3 className="text-lg font-mono text-sand mb-2">Cerchi altri corsi?</h3>
+        <p className="text-sand/50 text-sm mb-4">
+          Flyover Academy offre corsi su droni, fotogrammetria, restauro, realtà virtuale e molto altro.
+        </p>
+        <a
+          href="https://flyover.adarteinfo.it/corsi-flyover-academy/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-terracotta text-white font-mono text-sm font-bold px-6 py-2.5 rounded-full hover:bg-terracotta/90 transition"
+        >
+          Scopri Flyover Academy →
+        </a>
+      </div>
     </main>
   );
 }

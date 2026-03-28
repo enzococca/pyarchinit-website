@@ -33,7 +33,7 @@ export function ImageBlock({ block, onChange }: ImageBlockProps) {
         ) : (
           <div className="aspect-video flex flex-col items-center justify-center gap-2 text-ochre/40">
             <ImageIcon size={32} />
-            <span className="text-sm">Clicca per selezionare un'immagine</span>
+            <span className="text-sm">Clicca per selezionare un&apos;immagine</span>
           </div>
         )}
       </div>

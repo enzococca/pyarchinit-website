@@ -2,6 +2,21 @@ import { prisma } from "./db";
 
 const FLYOVER_API = "https://flyover.adarteinfo.it/wp-json/wc/store/v1/products";
 
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&#8211;/g, "–")
+    .replace(/&#8212;/g, "—")
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"')
+    .replace(/&#038;/g, "&")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ");
+}
+
 interface FlyoverProduct {
   id: number;
   name: string;
@@ -47,10 +62,18 @@ export async function syncFlyoverCourses() {
     return { synced: 0, removed: 0, errors: ["Unexpected response format from Flyover API"] };
   }
 
+  // Filter to only pyArchInit/QGIS-related courses
+  const filteredProducts = products.filter((p) => {
+    const titleLower = p.name.toLowerCase();
+    const catNames = p.categories.map((c) => c.name.toLowerCase()).join(" ");
+    const combined = `${titleLower} ${catNames}`;
+    return combined.includes("pyarchinit") || combined.includes("qgis");
+  });
+
   let synced = 0;
   const errors: string[] = [];
 
-  for (const product of products) {
+  for (const product of filteredProducts) {
     try {
       const price = parseInt(product.prices.price) / 100; // WC Store API returns cents
       const salePrice = product.prices.sale_price
@@ -78,11 +101,12 @@ export async function syncFlyoverCourses() {
         .trim();
 
       const slug = `flyover-${product.slug}`;
+      const title = decodeHtmlEntities(product.name);
 
       await prisma.course.upsert({
         where: { slug },
         update: {
-          title: product.name,
+          title,
           description,
           price: salePrice || price,
           coverImage,
@@ -90,7 +114,7 @@ export async function syncFlyoverCourses() {
           status: "PUBLISHED",
         },
         create: {
-          title: product.name,
+          title,
           slug,
           description,
           price: salePrice || price,
@@ -107,8 +131,8 @@ export async function syncFlyoverCourses() {
     }
   }
 
-  // Remove courses that no longer exist on Flyover
-  const flyoverSlugs = products.map((p) => `flyover-${p.slug}`);
+  // Remove courses that no longer exist on Flyover (only among filtered/pyArchInit ones)
+  const flyoverSlugs = filteredProducts.map((p) => `flyover-${p.slug}`);
   let removed = 0;
   try {
     const result = await prisma.course.deleteMany({
