@@ -1,264 +1,502 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-const thoughts = [
-  "Struttura DB per le US...",
-  "Matrice di Harris → grafo diretto",
-  "Plugin QGIS: tabs → modules → db",
-  "Export PDF schede US",
-  "class UnitaStratigrafica:",
-  "Scavo → Dati → Analisi → Report",
-  "GIS layer: fase cronologica",
-  "def connection(self):",
-  "from ..modules.db import Utility",
-  "Periodizzazione automatica",
+/* ═══════════════════════════════════════════
+   REAL pyArchInit CODE SNIPPETS
+   ═══════════════════════════════════════════ */
+const codeSnippets = [
+  {
+    filename: "pyarchinitPlugin.py",
+    lines: [
+      { text: "class PyArchInitPlugin(object):", color: "keyword" },
+      { text: "    HOME = os.environ['PYARCHINIT_HOME']", color: "normal" },
+      { text: "    PARAMS_DICT = {", color: "normal" },
+      { text: "        'SERVER': '',", color: "string" },
+      { text: "        'HOST': '',", color: "string" },
+      { text: "        'DATABASE': '',", color: "string" },
+      { text: "        'PASSWORD': '',", color: "string" },
+      { text: "        'PORT': '',", color: "string" },
+      { text: "        'USER': ''", color: "string" },
+      { text: "    }", color: "normal" },
+      { text: "", color: "normal" },
+      { text: "    def __init__(self, iface):", color: "keyword" },
+      { text: "        self.iface = iface", color: "self" },
+      { text: "        self.plugin_window = None", color: "self" },
+    ],
+  },
+  {
+    filename: "US_USM.py",
+    lines: [
+      { text: "from ..modules.db.pyarchinit_conn_strings import Connection", color: "import" },
+      { text: "from ..modules.db.pyarchinit_db_manager import Pyarchinit_db_management", color: "import" },
+      { text: "from ..modules.db.pyarchinit_utility import Utility", color: "import" },
+      { text: "from ..modules.gis.pyarchinit_pyqgis import Pyarchinit_pyqgis", color: "import" },
+      { text: "from ..modules.utility.pyarchinit_error_check import Error_check", color: "import" },
+      { text: "", color: "normal" },
+      { text: "class pyarchinit_US(QDialog, MAIN_DIALOG_CLASS):", color: "keyword" },
+      { text: '    """Gestione Unità Stratigrafiche"""', color: "comment" },
+      { text: "", color: "normal" },
+      { text: "    def __init__(self, iface):", color: "keyword" },
+      { text: "        super().__init__()", color: "self" },
+      { text: "        self.iface = iface", color: "self" },
+      { text: "        self.pyQGIS = Pyarchinit_pyqgis(iface)", color: "self" },
+      { text: "        self.setupUi(self)", color: "self" },
+    ],
+  },
+  {
+    filename: "pyarchinit_db_manager.py",
+    lines: [
+      { text: "class Pyarchinit_db_management(object):", color: "keyword" },
+      { text: "    metadata = MetaData()", color: "normal" },
+      { text: "    engine = None", color: "normal" },
+      { text: "", color: "normal" },
+      { text: "    def connection(self):", color: "keyword" },
+      { text: "        cfg = Connection()", color: "normal" },
+      { text: "        conn_str = cfg.conn_str()", color: "normal" },
+      { text: "        self.engine = create_engine(conn_str)", color: "self" },
+      { text: "        self.metadata.create_all(self.engine)", color: "self" },
+      { text: "", color: "normal" },
+      { text: "    def insert_values(self, *args):", color: "keyword" },
+      { text: "        session = sessionmaker(bind=self.engine)()", color: "normal" },
+      { text: "        record = self.table(*args)", color: "normal" },
+      { text: "        session.add(record)", color: "normal" },
+    ],
+  },
+  {
+    filename: "Site.py",
+    lines: [
+      { text: "class pyarchinit_Site(QDialog, MAIN_DIALOG_CLASS):", color: "keyword" },
+      { text: '    """Gestione Scheda Sito Archeologico"""', color: "comment" },
+      { text: "    L = QgsSettings().value('locale/userLocale')[0:2]", color: "normal" },
+      { text: "", color: "normal" },
+      { text: "    def __init__(self, iface):", color: "keyword" },
+      { text: "        super().__init__()", color: "self" },
+      { text: "        self.iface = iface", color: "self" },
+      { text: "        self.pyQGIS = Pyarchinit_pyqgis(iface)", color: "self" },
+      { text: "        self.setupUi(self)", color: "self" },
+      { text: "        self.currentLayerId = None", color: "self" },
+      { text: "", color: "normal" },
+      { text: "    def on_pushButton_search_pressed(self):", color: "keyword" },
+      { text: "        search_dict = self.compile_search()", color: "normal" },
+      { text: "        records = self.DB_MANAGER.query_bool(search_dict)", color: "normal" },
+    ],
+  },
 ];
 
-function ThoughtBubble({ text, index }: { text: string; index: number }) {
-  const positions = [
-    { left: "8%", bottom: "55%" },
-    { left: "3%", bottom: "40%" },
-    { left: "12%", bottom: "70%" },
-    { right: "8%", bottom: "50%" },
-    { right: "3%", bottom: "65%" },
-    { right: "15%", bottom: "45%" },
-    { left: "5%", bottom: "30%" },
-    { right: "10%", bottom: "35%" },
-  ];
-  const pos = positions[index % positions.length];
+/* ═══════════════════════════════════════════
+   THOUGHT BUBBLES - Real dev thoughts
+   ═══════════════════════════════════════════ */
+const thoughtsLeft = [
+  { text: "Matrice di Harris → grafo diretto...", icon: "🔗" },
+  { text: "Servono le relazioni tra US", icon: "📐" },
+  { text: "Plugin QGIS: tabs → modules → db", icon: "🧩" },
+  { text: "Export PDF per le schede US", icon: "📄" },
+  { text: "Periodizzazione automatica?", icon: "⏳" },
+];
+
+const thoughtsRight = [
+  { text: "GIS layer per fase cronologica", icon: "🗺️" },
+  { text: "Connessione PostgreSQL → ORM", icon: "🗄️" },
+  { text: "Fotogrammetria → CloudCompare", icon: "📷" },
+  { text: "Template GNA per la consegna", icon: "📋" },
+  { text: "WebODM per le ortofoto drone", icon: "🛸" },
+];
+
+/* ═══════════════════════════════════════════
+   KEYBOARD LAYOUT (Italian ISO)
+   ═══════════════════════════════════════════ */
+const keyboardRows = [
+  ["Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "ì", "⌫"],
+  ["Tab", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "è", "+", "\\"],
+  ["Caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", "ò", "à", "ù", "⏎"],
+  ["⇧", "<", "z", "x", "c", "v", "b", "n", "m", ",", ".", "-", "⇧"],
+  ["Ctrl", "⌘", "Alt", " ", "Alt", "Fn", "Ctrl"],
+];
+
+const specialWidths: Record<string, string> = {
+  Esc: "w-10", "⌫": "w-14", Tab: "w-14", "\\": "w-10",
+  Caps: "w-16", "⏎": "w-14", "⇧": "w-14", " ": "w-48",
+  Ctrl: "w-12", "⌘": "w-10", Alt: "w-10", Fn: "w-10", "<": "w-8",
+};
+
+/* ═══════════════════════════════════════════
+   SYNTAX HIGHLIGHTING COLORS
+   ═══════════════════════════════════════════ */
+const syntaxColors: Record<string, string> = {
+  keyword: "#c792ea",
+  string: "#c3e88d",
+  comment: "#546e7a",
+  import: "#89ddff",
+  self: "#f78c6c",
+  normal: "#d4d4d4",
+};
+
+/* ═══════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════ */
+
+function MonitorScreen({
+  snippet,
+  charIndex,
+}: {
+  snippet: (typeof codeSnippets)[0];
+  charIndex: number;
+}) {
+  let totalChars = 0;
 
   return (
-    <div
-      className="absolute animate-thought pointer-events-none"
-      style={{
-        ...pos,
-        animationDelay: `${index * 3.5}s`,
-        animationDuration: "8s",
-      }}
-    >
-      {/* Cloud shape */}
-      <div className="relative">
-        <div className="bg-primary/80 backdrop-blur-md border border-teal/20 rounded-2xl px-5 py-3 shadow-lg shadow-teal/5 max-w-[220px]">
-          <p className="text-sand/80 text-xs font-mono leading-relaxed whitespace-nowrap">
-            {text}
-          </p>
+    <div className="monitor-screen">
+      {/* Title bar */}
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1e1e1e] border-b border-[#333] rounded-t-lg">
+        <div className="flex gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
         </div>
-        {/* Trailing dots */}
-        <div className="absolute -bottom-3 left-8 w-3 h-3 rounded-full bg-primary/70 border border-teal/15" />
-        <div className="absolute -bottom-6 left-5 w-2 h-2 rounded-full bg-primary/60 border border-teal/10" />
-        <div className="absolute -bottom-8 left-3 w-1.5 h-1.5 rounded-full bg-primary/50 border border-teal/10" />
+        <span className="text-[10px] text-[#888] font-mono ml-2">{snippet.filename}</span>
+        <div className="flex-1" />
+        <span className="text-[9px] text-[#555] font-mono">pyArchInit</span>
+      </div>
+
+      {/* Code area */}
+      <div className="bg-[#1e1e1e] p-3 rounded-b-lg font-mono text-[11px] md:text-xs leading-[1.6] min-h-[220px] md:min-h-[280px] overflow-hidden">
+        {snippet.lines.map((line, lineIdx) => {
+          const lineStart = totalChars;
+          totalChars += line.text.length + 1;
+          const visibleChars = Math.max(0, Math.min(line.text.length, charIndex - lineStart));
+          const visibleText = line.text.substring(0, visibleChars);
+          const showCursor = charIndex >= lineStart && charIndex < lineStart + line.text.length + 1;
+
+          return (
+            <div key={lineIdx} className="flex">
+              <span className="w-6 text-right mr-3 text-[#444] select-none text-[10px]">
+                {lineIdx + 1}
+              </span>
+              <span style={{ color: syntaxColors[line.color] || "#d4d4d4" }}>
+                {visibleText}
+                {showCursor && (
+                  <span className="inline-block w-[7px] h-[14px] bg-[#00D4AA] animate-blink align-middle ml-px" />
+                )}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function FloatingParticle({ delay, duration, left }: { delay: number; duration: number; left: string }) {
+function Keyboard({ activeKey }: { activeKey: string }) {
   return (
-    <div
-      className="absolute w-1 h-1 rounded-full animate-float-up pointer-events-none"
-      style={{
-        left,
-        bottom: "-5%",
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`,
-        backgroundColor: delay % 3 === 0 ? "#00D4AA" : delay % 3 === 1 ? "#D4712A" : "#8B7355",
-        opacity: 0.3 + Math.random() * 0.3,
-      }}
-    />
+    <div className="keyboard-container perspective-[800px]">
+      <div className="transform rotateX(12deg) space-y-[3px] md:space-y-1">
+        {keyboardRows.map((row, rowIdx) => (
+          <div key={rowIdx} className="flex gap-[3px] md:gap-1 justify-center">
+            {row.map((key, keyIdx) => {
+              const isActive = activeKey.toLowerCase() === key.toLowerCase() ||
+                (key === " " && activeKey === " ") ||
+                (key === "⇧" && activeKey === "Shift") ||
+                (key === "⏎" && activeKey === "Enter");
+              const width = specialWidths[key] || "w-7 md:w-8";
+
+              return (
+                <div
+                  key={`${rowIdx}-${keyIdx}`}
+                  className={`
+                    ${width} h-7 md:h-8 rounded-[4px] flex items-center justify-center
+                    text-[8px] md:text-[9px] font-mono select-none
+                    transition-all duration-75
+                    ${isActive
+                      ? "bg-[#00D4AA] text-[#0a0e17] shadow-[0_0_12px_rgba(0,212,170,0.6),inset_0_-1px_0_rgba(0,0,0,0.2)] scale-95 translate-y-[1px]"
+                      : "bg-[#2a2a3a] text-[#666] shadow-[0_2px_0_#1a1a2a,inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-[#333347]"
+                    }
+                  `}
+                >
+                  {key === " " ? "" : key}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
+
+function ThoughtCloud({
+  thought,
+  side,
+  delay,
+}: {
+  thought: { text: string; icon: string };
+  side: "left" | "right";
+  delay: number;
+}) {
+  return (
+    <div
+      className={`absolute ${side === "left" ? "left-3 md:left-8" : "right-3 md:right-8"} pointer-events-none`}
+      style={{
+        top: `${20 + (delay % 5) * 14}%`,
+        animationDelay: `${delay * 4}s`,
+      }}
+    >
+      <div
+        className="animate-cloud-float"
+        style={{ animationDelay: `${delay * 4}s` }}
+      >
+        <div
+          className={`
+            relative bg-[#0d1117]/90 backdrop-blur-sm
+            border border-[#00D4AA]/15
+            rounded-2xl px-4 py-2.5 max-w-[200px] md:max-w-[240px]
+            shadow-[0_4px_20px_rgba(0,212,170,0.08)]
+          `}
+        >
+          <div className="flex items-start gap-2">
+            <span className="text-sm shrink-0 mt-0.5">{thought.icon}</span>
+            <p className="text-[11px] text-[#a0b0c0] leading-relaxed font-mono">
+              {thought.text}
+            </p>
+          </div>
+          {/* Tail dots */}
+          <div
+            className={`absolute top-1/2 ${side === "left" ? "-right-2" : "-left-2"}`}
+          >
+            <div className="w-2 h-2 rounded-full bg-[#0d1117]/80 border border-[#00D4AA]/10" />
+          </div>
+          <div
+            className={`absolute top-1/2 ${side === "left" ? "-right-4" : "-left-4"} mt-1`}
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-[#0d1117]/60 border border-[#00D4AA]/5" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   MAIN LANDING PAGE
+   ═══════════════════════════════════════════ */
 
 export default function LandingPage() {
   const router = useRouter();
   const [transitioning, setTransitioning] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [charIndex, setCharIndex] = useState(0);
+  const [snippetIdx, setSnippetIdx] = useState(0);
+  const [activeKey, setActiveKey] = useState("");
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const currentSnippet = codeSnippets[snippetIdx];
+  const totalChars = useMemo(
+    () => currentSnippet.lines.reduce((sum, l) => sum + l.text.length + 1, 0),
+    [currentSnippet]
+  );
+
+  // Mount animation
   useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 300);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(t);
   }, []);
 
-  const handleEnter = () => {
+  // Typing engine
+  useEffect(() => {
+    const speed = 60 + Math.random() * 40; // 60-100ms per char, natural variance
+    intervalRef.current = setInterval(() => {
+      setCharIndex((prev) => {
+        if (prev >= totalChars) {
+          // Move to next snippet after a pause
+          setTimeout(() => {
+            setSnippetIdx((s) => (s + 1) % codeSnippets.length);
+            setCharIndex(0);
+          }, 1500);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, speed);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [totalChars, snippetIdx]);
+
+  // Map charIndex to the actual character being typed for keyboard highlight
+  useEffect(() => {
+    const allText = currentSnippet.lines.map((l) => l.text).join("\n");
+    const char = allText[charIndex] || "";
+    setActiveKey(char === "\n" ? "⏎" : char);
+
+    // Clear key highlight after brief flash
+    const t = setTimeout(() => setActiveKey(""), 50);
+    return () => clearTimeout(t);
+  }, [charIndex, currentSnippet]);
+
+  const handleEnter = useCallback(() => {
     if (transitioning) return;
     setTransitioning(true);
-    setTimeout(() => router.push("/home"), 1200);
-  };
-
-  // Generate stable particles
-  const particles = Array.from({ length: 30 }, (_, i) => ({
-    delay: i * 1.2 + Math.random() * 2,
-    duration: 12 + Math.random() * 8,
-    left: `${5 + (i * 3.1) % 90}%`,
-  }));
+    setTimeout(() => router.push("/home"), 1000);
+  }, [transitioning, router]);
 
   return (
-    <div
-      className="fixed inset-0 bg-primary overflow-hidden cursor-pointer"
-      onClick={handleEnter}
-      onWheel={handleEnter}
-    >
-      {/* Video background */}
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-          loaded ? "opacity-100" : "opacity-0"
-        }`}
-        onLoadedData={() => setLoaded(true)}
-      >
-        <source src="/videos/pyarchinit_studio_grade.mp4" type="video/mp4" />
-      </video>
+    <div className="fixed inset-0 bg-[#080c14] overflow-hidden">
+      {/* Ambient background */}
+      <div className="absolute inset-0">
+        {/* Radial glow from monitor */}
+        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#00D4AA]/[0.03] rounded-full blur-[100px]" />
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#00D4AA 1px, transparent 1px), linear-gradient(90deg, #00D4AA 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+        {/* Noise texture overlay */}
+        <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMC4xNSIvPjwvc3ZnPg==')]" />
+      </div>
 
-      {/* Subtle overlay gradient for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-primary/40" />
-
-      {/* Floating particles */}
-      {particles.map((p, i) => (
-        <FloatingParticle key={i} {...p} />
+      {/* Left thought bubbles */}
+      {thoughtsLeft.map((t, i) => (
+        <ThoughtCloud key={`l${i}`} thought={t} side="left" delay={i} />
       ))}
 
-      {/* Thought bubbles */}
-      {thoughts.map((text, i) => (
-        <ThoughtBubble key={i} text={text} index={i} />
+      {/* Right thought bubbles */}
+      {thoughtsRight.map((t, i) => (
+        <ThoughtCloud key={`r${i}`} thought={t} side="right" delay={i + 0.5} />
       ))}
 
-      {/* Magnifier hint */}
+      {/* Main content - Monitor + Keyboard */}
       <div
-        className={`absolute top-6 right-6 transition-all duration-1000 delay-[2s] ${
-          loaded ? "opacity-60" : "opacity-0"
+        className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ${
+          mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         }`}
       >
-        <div className="flex items-center gap-2 text-sand/40 text-xs">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <span className="font-mono">Passa il mouse per esplorare</span>
+        {/* Monitor */}
+        <div className="w-[340px] md:w-[520px] lg:w-[600px] mb-3">
+          {/* Monitor bezel */}
+          <div className="bg-[#1a1a2e] rounded-xl p-1.5 shadow-[0_0_60px_rgba(0,212,170,0.08),0_20px_60px_rgba(0,0,0,0.5)]">
+            <MonitorScreen snippet={currentSnippet} charIndex={charIndex} />
+          </div>
+          {/* Monitor stand */}
+          <div className="flex flex-col items-center">
+            <div className="w-16 h-4 bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a] rounded-b" />
+            <div className="w-28 h-1.5 bg-[#1a1a2a] rounded-full shadow-md" />
+          </div>
+        </div>
+
+        {/* Keyboard */}
+        <div
+          className={`transition-all duration-1000 delay-300 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
+          <Keyboard activeKey={activeKey} />
         </div>
       </div>
 
       {/* Bottom CTA */}
-      <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-10">
+      <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-6 md:pb-10 z-20">
         <div
-          className={`transition-all duration-1000 delay-[1s] ${
-            loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          className={`transition-all duration-1000 delay-[1.5s] ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}
         >
-          {/* pyArchInit logo image + text */}
-          <div className="flex justify-center mb-4">
+          <div className="flex items-center gap-3 mb-3">
             <Image
               src="/images/logo_pyarchinit_official.png"
               alt="pyArchInit"
-              width={72}
-              height={72}
-              className="drop-shadow-lg"
+              width={36}
+              height={36}
+              className="drop-shadow-[0_0_8px_rgba(0,212,170,0.3)]"
             />
+            <h1 className="text-xl md:text-2xl font-mono font-bold text-[#d4d4d4] tracking-tight">
+              py<span className="text-[#00D4AA]">ArchInit</span>
+            </h1>
           </div>
-          <h1 className="text-3xl md:text-5xl font-mono font-bold text-sand mb-2 text-center tracking-tight">
-            py<span className="text-teal">ArchInit</span>
-          </h1>
-          <p className="text-sand/50 text-sm md:text-base text-center mb-8 max-w-md mx-auto px-4">
-            Piattaforma Open Source per l&apos;Archeologia Digitale
-          </p>
 
-          {/* Enter button */}
           <button
             onClick={handleEnter}
-            className="group flex flex-col items-center gap-3"
+            className="group flex flex-col items-center gap-1.5 mx-auto"
           >
-            <span className="text-sand/60 text-sm font-mono tracking-[0.3em] uppercase group-hover:text-teal transition-colors">
-              Scopri
+            <span className="text-[#546e7a] text-[10px] font-mono tracking-[0.25em] uppercase group-hover:text-[#00D4AA] transition-colors duration-300">
+              Entra nella piattaforma
             </span>
-            <div className="animate-bounce-slow">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-teal/60 group-hover:text-teal transition-colors"
-              >
-                <path d="M12 5v14M5 12l7 7 7-7" />
-              </svg>
-            </div>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-[#00D4AA]/40 group-hover:text-[#00D4AA] transition-colors animate-gentle-bounce"
+            >
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
           </button>
         </div>
       </div>
 
+      {/* Click/scroll to enter */}
+      <div
+        className="absolute inset-0 z-10 cursor-pointer"
+        onClick={handleEnter}
+        onWheel={handleEnter}
+        style={{ pointerEvents: transitioning ? "none" : "auto" }}
+      />
+
       {/* Transition overlay */}
       <div
-        className={`fixed inset-0 bg-primary transition-all pointer-events-none ${
-          transitioning
-            ? "opacity-100 duration-1000"
-            : "opacity-0 duration-500"
+        className={`fixed inset-0 bg-[#080c14] transition-opacity pointer-events-none z-30 ${
+          transitioning ? "opacity-100 duration-800" : "opacity-0 duration-500"
         }`}
       />
 
-      {/* Custom animations */}
+      {/* Animations */}
       <style jsx>{`
-        @keyframes thought {
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .animate-blink {
+          animation: blink 1s step-end infinite;
+        }
+        @keyframes cloud-float {
           0% {
             opacity: 0;
-            transform: translateY(20px) scale(0.8);
+            transform: translateY(10px) scale(0.9);
           }
-          10% {
-            opacity: 1;
+          8% {
+            opacity: 0.9;
             transform: translateY(0) scale(1);
           }
-          35% {
-            opacity: 1;
-            transform: translateY(-10px) scale(1);
+          30% {
+            opacity: 0.9;
+            transform: translateY(-5px) scale(1);
           }
-          45% {
+          42% {
             opacity: 0;
-            transform: translateY(-30px) scale(0.9);
+            transform: translateY(-15px) scale(0.95);
           }
           100% {
             opacity: 0;
-            transform: translateY(-30px) scale(0.9);
           }
         }
-        .animate-thought {
-          animation: thought 8s ease-in-out infinite;
+        .animate-cloud-float {
+          animation: cloud-float 20s ease-in-out infinite;
           opacity: 0;
         }
-        @keyframes float-up {
-          0% {
-            transform: translateY(0) translateX(0);
-            opacity: 0;
-          }
-          10% {
-            opacity: 0.5;
-          }
-          90% {
-            opacity: 0.3;
-          }
-          100% {
-            transform: translateY(-110vh) translateX(30px);
-            opacity: 0;
-          }
+        @keyframes gentle-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(4px); }
         }
-        .animate-float-up {
-          animation: float-up linear infinite;
-        }
-        @keyframes bounce-slow {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(6px);
-          }
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
+        .animate-gentle-bounce {
+          animation: gentle-bounce 2.5s ease-in-out infinite;
         }
       `}</style>
     </div>
