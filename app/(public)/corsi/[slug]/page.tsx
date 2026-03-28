@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { BookOpen, Clock, Video, FileText, HelpCircle, Code2, type LucideIcon } from "lucide-react";
+import { BookOpen, Clock, Video, FileText, HelpCircle, Code2, ExternalLink, type LucideIcon } from "lucide-react";
 import { CourseEnrollButton } from "./enroll-button";
 
 interface PageProps {
@@ -107,6 +108,12 @@ export default async function CourseDetailPage({ params }: PageProps) {
             <span className="text-xs px-2 py-0.5 rounded-full bg-sand/5 text-sand/40 border border-sand/10">
               {course.category}
             </span>
+            {course.slug.startsWith("flyover-") && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-ochre/15 text-ochre border border-ochre/20 flex items-center gap-1">
+                <ExternalLink size={10} />
+                Flyover Academy
+              </span>
+            )}
           </div>
           <h1 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-4">
             {course.title}
@@ -205,12 +212,30 @@ export default async function CourseDetailPage({ params }: PageProps) {
         {/* Sidebar */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 bg-code-bg rounded-card border border-sand/10 p-6">
+            {course.slug.startsWith("flyover-") && (
+              <div className="mb-4 flex items-center gap-1.5 text-xs text-ochre">
+                <ExternalLink size={12} />
+                <span className="font-mono">Flyover Academy</span>
+              </div>
+            )}
             <div className="text-3xl font-mono font-bold text-sand mb-6">
               {course.price === 0
                 ? "Gratuito"
                 : `€${course.price.toFixed(2)}`}
             </div>
-            <CourseEnrollButton courseId={course.id} price={course.price} />
+            {course.slug.startsWith("flyover-") ? (
+              <a
+                href={`https://flyover.adarteinfo.it/prodotto/${course.slug.replace(/^flyover-/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-card bg-ochre text-primary font-medium hover:bg-ochre/90 transition-colors text-sm"
+              >
+                <ExternalLink size={15} />
+                Vai al corso su Flyover
+              </a>
+            ) : (
+              <CourseEnrollButton courseId={course.id} price={course.price} />
+            )}
             <ul className="mt-6 space-y-2 text-sm text-sand/50">
               <li className="flex items-center gap-2">
                 <BookOpen size={14} />

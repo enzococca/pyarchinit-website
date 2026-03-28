@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, BookOpen, Users } from "lucide-react";
+import { Plus, BookOpen, Users, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 interface Course {
@@ -28,10 +28,18 @@ const levelClass: Record<Course["level"], string> = {
   AVANZATO: "bg-terracotta/10 text-terracotta",
 };
 
+interface SyncResult {
+  synced: number;
+  removed: number;
+  errors: string[];
+}
+
 export default function AdminCorsiPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [creating, setCreating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
   const loadCourses = useCallback(async () => {
     const res = await fetch("/api/courses");
@@ -41,6 +49,25 @@ export default function AdminCorsiPage() {
   useEffect(() => {
     loadCourses();
   }, [loadCourses]);
+
+  const syncFlyover = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/courses/sync", { method: "POST" });
+      if (res.ok) {
+        const result: SyncResult = await res.json();
+        setSyncResult(result);
+        await loadCourses();
+      } else {
+        setSyncResult({ synced: 0, removed: 0, errors: [`HTTP ${res.status}`] });
+      }
+    } catch {
+      setSyncResult({ synced: 0, removed: 0, errors: ["Errore di rete"] });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const createCourse = async () => {
     const title = prompt("Titolo del corso:");
@@ -64,15 +91,47 @@ export default function AdminCorsiPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-mono text-teal">Corsi</h1>
-        <button
-          onClick={createCourse}
-          disabled={creating}
-          className="flex items-center gap-2 bg-teal text-primary px-4 py-2 rounded-card text-sm font-medium hover:bg-teal/90 transition disabled:opacity-50"
-        >
-          <Plus size={16} />
-          {creating ? "Creazione..." : "Nuovo corso"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={syncFlyover}
+            disabled={syncing}
+            className="flex items-center gap-2 bg-code-bg border border-teal/30 text-teal px-4 py-2 rounded-card text-sm font-medium hover:bg-teal/10 transition disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={syncing ? "animate-spin" : ""} />
+            {syncing ? "Sincronizzazione..." : "Sincronizza Flyover"}
+          </button>
+          <button
+            onClick={createCourse}
+            disabled={creating}
+            className="flex items-center gap-2 bg-teal text-primary px-4 py-2 rounded-card text-sm font-medium hover:bg-teal/90 transition disabled:opacity-50"
+          >
+            <Plus size={16} />
+            {creating ? "Creazione..." : "Nuovo corso"}
+          </button>
+        </div>
       </div>
+
+      {syncResult && (
+        <div
+          className={`mb-4 p-3 rounded-card text-sm ${
+            syncResult.errors.length > 0
+              ? "bg-terracotta/10 border border-terracotta/30 text-terracotta"
+              : "bg-teal/10 border border-teal/30 text-teal"
+          }`}
+        >
+          {syncResult.errors.length === 0 ? (
+            <span>
+              Sincronizzazione completata: {syncResult.synced} corsi aggiornati
+              {syncResult.removed > 0 && `, ${syncResult.removed} rimossi`}.
+            </span>
+          ) : (
+            <span>
+              Sincronizzati {syncResult.synced} corsi con {syncResult.errors.length} errori:{" "}
+              {syncResult.errors.join("; ")}
+            </span>
+          )}
+        </div>
+      )}
 
       {courses.length === 0 ? (
         <div className="text-center py-16 text-sand/40">

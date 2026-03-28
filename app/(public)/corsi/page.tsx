@@ -2,14 +2,27 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/db";
-import { BookOpen } from "lucide-react";
+import { syncFlyoverCourses } from "@/lib/flyover-sync";
+import { BookOpen, ExternalLink } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Corsi | pyArchInit",
   description: "Corsi di formazione su Python, GIS, QGIS e archeologia digitale.",
 };
 
-const CATEGORIES = ["Tutti", "Python", "GIS", "QGIS", "pyArchInit", "Scavo"];
+const CATEGORIES = ["Tutti", "Python", "GIS", "QGIS", "pyArchInit", "Scavo", "Archeologia", "Drone", "Restauro", "Architettura"];
+
+// Throttled sync: at most once per hour per server instance
+const SYNC_INTERVAL = 60 * 60 * 1000; // 1 hour
+let lastSync = 0;
+
+async function maybeSyncCourses() {
+  const now = Date.now();
+  if (now - lastSync > SYNC_INTERVAL) {
+    lastSync = now;
+    await syncFlyoverCourses().catch(console.error);
+  }
+}
 
 const levelLabel: Record<string, string> = {
   BASE: "Base",
@@ -28,6 +41,9 @@ interface PageProps {
 }
 
 export default async function CorsiPage({ searchParams }: PageProps) {
+  // Trigger Flyover sync throttled to once per hour
+  await maybeSyncCourses();
+
   const activeCategory = searchParams.cat ?? "Tutti";
 
   const courses = await prisma.course.findMany({
@@ -112,7 +128,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                   </div>
                 )}
                 <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full ${levelClass[course.level] ?? "bg-sand/10 text-sand/50"}`}
                     >
@@ -121,6 +137,12 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                     <span className="text-xs px-2 py-0.5 rounded-full bg-sand/5 text-sand/40">
                       {course.category}
                     </span>
+                    {course.slug.startsWith("flyover-") && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-ochre/15 text-ochre border border-ochre/20 flex items-center gap-1">
+                        <ExternalLink size={10} />
+                        Flyover Academy
+                      </span>
+                    )}
                   </div>
                   <h2 className="font-mono font-bold text-sand text-lg mb-2 leading-snug flex-1">
                     <Link
