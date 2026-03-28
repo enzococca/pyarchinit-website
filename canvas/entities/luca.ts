@@ -37,7 +37,8 @@ export class Luca {
 
   draw(ctx: CanvasRenderingContext2D, time: number, glowColor?: { r: number; g: number; b: number }): void {
     const { x, y, scale } = this.config;
-    const gc = glowColor || { r: 45, g: 212, b: 191 };
+    // Default glow is now blue-ish to match the royal blue hoodie
+    const gc = glowColor || { r: 37, g: 99, b: 235 };
 
     ctx.save();
     ctx.translate(x, y);
@@ -309,11 +310,13 @@ export class Luca {
   }
 
   private drawTorso(ctx: CanvasRenderingContext2D, gc: { r: number; g: number; b: number }): void {
-    // Torso (hoodie - dark fabric)
+    // Torso (hoodie - royal blue)
     const hoodieGrad = ctx.createLinearGradient(-55, -240, 55, -140);
-    hoodieGrad.addColorStop(0, "#1a2535");
-    hoodieGrad.addColorStop(0.5, "#1e2940");
-    hoodieGrad.addColorStop(1, "#162030");
+    hoodieGrad.addColorStop(0, "#1d4ed8");  // darker blue on sides
+    hoodieGrad.addColorStop(0.3, "#2563eb"); // royal blue center
+    hoodieGrad.addColorStop(0.5, "#3b82f6"); // slightly lighter highlight
+    hoodieGrad.addColorStop(0.7, "#2563eb");
+    hoodieGrad.addColorStop(1, "#1d4ed8");
     ctx.fillStyle = hoodieGrad;
 
     // Wider torso shape - more realistic proportions
@@ -328,16 +331,17 @@ export class Luca {
     ctx.fill();
 
     // Hoodie center seam
-    ctx.strokeStyle = "#243040";
+    ctx.strokeStyle = "#1e4fc2";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(0, -248);
     ctx.lineTo(0, -135);
     ctx.stroke();
 
-    // Fabric fold shadows (left side)
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
+    // Fabric wrinkle detail lines (darker blue)
+    ctx.strokeStyle = "rgba(13, 42, 120, 0.4)";
     ctx.lineWidth = 1;
+    // Left side wrinkles
     ctx.beginPath();
     ctx.moveTo(-30, -240);
     ctx.quadraticCurveTo(-35, -200, -28, -150);
@@ -348,7 +352,7 @@ export class Luca {
     ctx.quadraticCurveTo(-18, -190, -12, -140);
     ctx.stroke();
 
-    // Fabric fold shadows (right side)
+    // Right side wrinkles
     ctx.beginPath();
     ctx.moveTo(30, -240);
     ctx.quadraticCurveTo(35, -200, 28, -150);
@@ -359,24 +363,36 @@ export class Luca {
     ctx.quadraticCurveTo(18, -190, 12, -140);
     ctx.stroke();
 
-    // Hood at neck/collar
-    ctx.fillStyle = "#1e2d42";
+    // Extra horizontal wrinkle near waist
+    ctx.strokeStyle = "rgba(13, 42, 120, 0.2)";
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
-    ctx.ellipse(0, -248, 25, 8, 0, Math.PI, Math.PI * 2);
+    ctx.moveTo(-40, -160);
+    ctx.quadraticCurveTo(0, -155, 40, -160);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-38, -145);
+    ctx.quadraticCurveTo(0, -140, 38, -145);
+    ctx.stroke();
+
+    // Hood at neck/collar - more visible, matching blue
+    ctx.fillStyle = "#1e4fc2";
+    ctx.beginPath();
+    ctx.ellipse(0, -248, 28, 10, 0, Math.PI, Math.PI * 2);
     ctx.fill();
 
-    // ─── LOGO ON BACK ──────────────────────────────────────────────────────
-    if (this.logoLoaded && this.logoImage) {
-      ctx.save();
-      ctx.globalAlpha = 0.35;
-      const logoSize = 50;
-      ctx.drawImage(this.logoImage, -logoSize / 2, -220, logoSize, logoSize);
-      ctx.restore();
-    }
+    // Hood inner lining slightly lighter
+    ctx.fillStyle = "#2563eb";
+    ctx.beginPath();
+    ctx.ellipse(0, -249, 22, 7, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+
+    // ─── adArte LOGO ON BACK ──────────────────────────────────────────────
+    this.drawAdArteLogo(ctx);
 
     // Subtle monitor glow reflection on fabric
     const fabricGlow = ctx.createRadialGradient(0, -200, 10, 0, -200, 80);
-    fabricGlow.addColorStop(0, `rgba(${gc.r}, ${gc.g}, ${gc.b}, 0.06)`);
+    fabricGlow.addColorStop(0, `rgba(${gc.r}, ${gc.g}, ${gc.b}, 0.08)`);
     fabricGlow.addColorStop(1, `rgba(${gc.r}, ${gc.g}, ${gc.b}, 0)`);
     ctx.fillStyle = fabricGlow;
     ctx.beginPath();
@@ -384,10 +400,65 @@ export class Luca {
     ctx.fill();
 
     // ── SHOULDERS ─────────────────────────────────────────────────────────
-    ctx.fillStyle = "#1a2535";
+    ctx.fillStyle = "#1d4ed8";
     ctx.beginPath();
     ctx.ellipse(0, -242, 58, 16, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // Shoulder highlight (light rim from monitor)
+    const shoulderHighlight = ctx.createLinearGradient(-58, -242, 58, -242);
+    shoulderHighlight.addColorStop(0, "rgba(59, 130, 246, 0)");
+    shoulderHighlight.addColorStop(0.4, "rgba(96, 165, 250, 0.25)");
+    shoulderHighlight.addColorStop(0.6, "rgba(96, 165, 250, 0.25)");
+    shoulderHighlight.addColorStop(1, "rgba(59, 130, 246, 0)");
+    ctx.fillStyle = shoulderHighlight;
+    ctx.beginPath();
+    ctx.ellipse(0, -242, 58, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private drawAdArteLogo(ctx: CanvasRenderingContext2D): void {
+    // Position: upper back, centered around y=-210
+    const cx = 0;
+    const cy = -210;
+
+    ctx.save();
+
+    // ── "ad" in small gold/ochre text ────────────────────────────────────
+    ctx.font = "bold 8px sans-serif";
+    ctx.fillStyle = "#C8A84E";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("ad", cx - 6, cy - 8);
+
+    // ── "Arte" in larger white text ───────────────────────────────────────
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.90)";
+    ctx.textAlign = "center";
+    ctx.fillText("Arte", cx - 4, cy + 3);
+
+    // ── Golden spiral next to "Arte" ──────────────────────────────────────
+    // Draw a spiral using multiple arc segments that grow in radius
+    const spiralCx = cx + 17;
+    const spiralCy = cy + 2;
+    ctx.strokeStyle = "#C8A84E";
+    ctx.lineWidth = 1;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    let r = 1.0;
+    const step = 0.35;
+    // Approximate Archimedean spiral with arc segments
+    for (let i = 0; i < 16; i++) {
+      const startAngle = (i / 16) * Math.PI * 4;
+      const endAngle = ((i + 1) / 16) * Math.PI * 4;
+      const midR = r + step * 0.5;
+      ctx.arc(spiralCx, spiralCy, midR, startAngle, endAngle);
+      r += step;
+    }
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   private drawArms(ctx: CanvasRenderingContext2D, time: number): void {
@@ -395,8 +466,8 @@ export class Luca {
     const leftArmOffset = Math.sin(time * 0.005) * 4;
     const leftFingerOffset = Math.sin(time * 0.012) * 2;
 
-    // Upper arm
-    ctx.fillStyle = "#1a2535";
+    // Upper arm - royal blue hoodie sleeve
+    ctx.fillStyle = "#2563eb";
     ctx.beginPath();
     ctx.moveTo(-48, -230);
     ctx.quadraticCurveTo(-80, -200 + leftArmOffset, -100, -125 + leftArmOffset);
@@ -427,7 +498,8 @@ export class Luca {
     const rightArmOffset = Math.sin(time * 0.005 + Math.PI * 0.7) * 4;
     const rightFingerOffset = Math.sin(time * 0.012 + Math.PI) * 2;
 
-    ctx.fillStyle = "#1a2535";
+    // Right arm - royal blue hoodie sleeve
+    ctx.fillStyle = "#2563eb";
     ctx.beginPath();
     ctx.moveTo(48, -230);
     ctx.quadraticCurveTo(80, -200 + rightArmOffset, 100, -125 + rightArmOffset);
@@ -454,7 +526,7 @@ export class Luca {
     }
   }
 
-  private drawHead(ctx: CanvasRenderingContext2D, time: number): void {
+  private drawHead(ctx: CanvasRenderingContext2D, _time: number): void {
     // Neck (slightly wider, more realistic)
     ctx.fillStyle = "#c8a882";
     ctx.beginPath();
@@ -482,57 +554,156 @@ export class Luca {
     ctx.ellipse(30, -290, 5, 8, 0.1, 0, Math.PI * 2);
     ctx.fill();
 
-    // ─── HAIR ───────────────────────────────────────────────────────────────
-    // Base hair mass
-    ctx.fillStyle = "#1a0e05";
+    // ─── BEARD SHADOW ───────────────────────────────────────────────────────
+    // Subtle dark shadow along the jawline and below ears (barely visible from behind)
+    const beardShadow = ctx.createRadialGradient(0, -268, 5, 0, -268, 22);
+    beardShadow.addColorStop(0, "rgba(30, 15, 5, 0.18)");
+    beardShadow.addColorStop(1, "rgba(30, 15, 5, 0)");
+    ctx.fillStyle = beardShadow;
     ctx.beginPath();
-    ctx.ellipse(0, -298, 33, 24, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -268, 22, 10, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Top of head hair volume
-    ctx.beginPath();
-    ctx.ellipse(0, -310, 30, 14, 0, Math.PI, Math.PI * 2);
-    ctx.fill();
+    // Side beard shadow under ears
+    for (const side of [-1, 1]) {
+      const bx = side * 26;
+      ctx.fillStyle = "rgba(25, 12, 4, 0.15)";
+      ctx.beginPath();
+      ctx.ellipse(bx, -276, 7, 10, side * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // Side hair going down
-    ctx.beginPath();
-    ctx.ellipse(-29, -294, 8, 18, -0.15, 0, Math.PI);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(29, -294, 8, 18, 0.15, 0, Math.PI);
-    ctx.fill();
-
-    // Individual hair strand suggestions - multiple thin lines in varying browns
-    const hairColors = ["#1a0e05", "#2a1a0a", "#1e1208", "#251610", "#20140a"];
-    ctx.lineWidth = 0.8;
+    // ─── GLASSES ARMS/TEMPLES ────────────────────────────────────────────────
+    // Thin lines from ear area forward along the sides of the head
+    ctx.strokeStyle = "#1a1a1a";
+    ctx.lineWidth = 1.5;
     ctx.lineCap = "round";
 
-    for (let i = 0; i < 20; i++) {
-      const angle = (i / 20) * Math.PI - Math.PI * 0.1;
-      const startX = Math.cos(angle + Math.PI) * 28;
-      const startY = -305 + Math.sin(angle + Math.PI) * 10;
-      const endX = startX + (Math.random() - 0.5) * 10;
-      const endY = startY + 15 + Math.random() * 12;
-      const cpX = startX + (Math.random() - 0.5) * 8;
-      const cpY = startY + 8 + Math.random() * 5;
+    // Left glasses arm: from left ear forward (slightly angled upward)
+    ctx.beginPath();
+    ctx.moveTo(-33, -291);   // near left ear
+    ctx.lineTo(-22, -295);   // extends toward front of head
+    ctx.stroke();
 
-      ctx.strokeStyle = hairColors[i % hairColors.length];
-      ctx.globalAlpha = 0.5 + Math.random() * 0.3;
+    // Right glasses arm
+    ctx.beginPath();
+    ctx.moveTo(33, -291);    // near right ear
+    ctx.lineTo(22, -295);    // extends toward front of head
+    ctx.stroke();
+
+    // ─── HAIR ───────────────────────────────────────────────────────────────
+    // Base hair mass - dark, larger and more voluminous for curly hair
+    ctx.fillStyle = "#1a0a04";
+    ctx.beginPath();
+    ctx.ellipse(0, -300, 35, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Top of head hair volume - higher/more voluminous for curly texture
+    ctx.fillStyle = "#1a0a04";
+    ctx.beginPath();
+    ctx.ellipse(0, -315, 32, 17, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+
+    // Side hair going down - slightly longer past ears
+    ctx.fillStyle = "#1f0e06";
+    ctx.beginPath();
+    ctx.ellipse(-31, -296, 9, 20, -0.2, 0, Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(31, -296, 9, 20, 0.2, 0, Math.PI);
+    ctx.fill();
+
+    // Extra curl volume on sides
+    ctx.fillStyle = "#2a1508";
+    ctx.beginPath();
+    ctx.ellipse(-26, -310, 8, 10, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(26, -310, 8, 10, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Nape of neck hair strands
+    ctx.fillStyle = "#1a0a04";
+    ctx.beginPath();
+    ctx.moveTo(-12, -272);
+    ctx.quadraticCurveTo(-14, -278, -8, -283);
+    ctx.quadraticCurveTo(-4, -280, -10, -275);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(12, -272);
+    ctx.quadraticCurveTo(14, -278, 8, -283);
+    ctx.quadraticCurveTo(4, -280, 10, -275);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, -271);
+    ctx.quadraticCurveTo(2, -278, 0, -284);
+    ctx.quadraticCurveTo(-2, -279, 0, -273);
+    ctx.closePath();
+    ctx.fill();
+
+    // ─── CURLY HAIR DETAIL ───────────────────────────────────────────────────
+    // Draw many small curved arcs and squiggly lines for curls
+    const curlColors = ["#1a0a04", "#2a1508", "#1f0e06", "#231205", "#2a1508"];
+    ctx.lineCap = "round";
+
+    // Back-of-head curls
+    const curlDefs = [
+      // [x, y, rx, ry, startAngle, endAngle, lineWidth, colorIdx]
+      [-18, -305, 5, 4, 0.2, Math.PI + 0.2, 1.5, 1],
+      [-10, -313, 4, 3, 0.0, Math.PI, 1.2, 0],
+      [0,   -316, 5, 4, 0.1, Math.PI + 0.3, 1.4, 2],
+      [10,  -313, 4, 3, -0.1, Math.PI + 0.1, 1.2, 1],
+      [18,  -305, 5, 4, -0.2, Math.PI - 0.1, 1.5, 0],
+      [-24, -298, 4, 3, 0.3, Math.PI + 0.4, 1.1, 2],
+      [24,  -298, 4, 3, -0.3, Math.PI - 0.3, 1.1, 2],
+      [-6,  -307, 3, 4, 0.4, Math.PI + 0.5, 1.0, 3],
+      [6,   -307, 3, 4, -0.4, Math.PI - 0.4, 1.0, 4],
+      [-14, -296, 4, 3, 0.1, Math.PI + 0.2, 1.3, 0],
+      [14,  -296, 4, 3, -0.1, Math.PI - 0.2, 1.3, 1],
+    ];
+
+    for (const [cx, cy, rx, ry, rot, endA, lw, ci] of curlDefs) {
+      ctx.strokeStyle = curlColors[ci as number];
+      ctx.lineWidth = lw as number;
       ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+      ctx.ellipse(cx as number, cy as number, rx as number, ry as number, rot as number, 0, endA as number);
+      ctx.stroke();
+    }
+
+    // Loose squiggly strands across the back of the head
+    const squiggleDefs: Array<[number, number, number, number, number, number]> = [
+      [-20, -285, -16, -295, -22, -290],
+      [-8,  -283, -4,  -294, -10, -289],
+      [0,   -284, 3,   -296, -3,  -290],
+      [8,   -283, 5,   -294, 10,  -289],
+      [20,  -285, 17,  -295, 22,  -290],
+      [-14, -288, -11, -300, -16, -295],
+      [14,  -288, 11,  -300, 16,  -295],
+    ];
+
+    ctx.lineWidth = 0.9;
+    for (const [sx, sy, ex, ey, cpx, cpy] of squiggleDefs) {
+      ctx.strokeStyle = curlColors[Math.floor(Math.abs(sx) / 5) % curlColors.length];
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(cpx, cpy, ex, ey);
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
 
-    // Back of head hair texture - subtle highlights
-    ctx.strokeStyle = "rgba(50, 35, 20, 0.3)";
+    // Hair highlight (subtle warm reflection on curls)
+    ctx.strokeStyle = "rgba(60, 35, 18, 0.35)";
     ctx.lineWidth = 0.5;
-    for (let i = 0; i < 10; i++) {
-      const hx = -15 + i * 3;
+    for (let i = 0; i < 8; i++) {
+      const hx = -14 + i * 4;
       ctx.beginPath();
-      ctx.moveTo(hx, -310);
-      ctx.quadraticCurveTo(hx + 2, -295, hx - 1, -280);
+      ctx.moveTo(hx, -313);
+      ctx.quadraticCurveTo(hx + 3, -305, hx - 1, -295);
       ctx.stroke();
     }
   }
