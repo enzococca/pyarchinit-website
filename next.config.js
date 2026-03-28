@@ -5,6 +5,9 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "*.b-cdn.net" },
     ],
+    localPatterns: [
+      { pathname: "/uploads/**" },
+    ],
   },
 };
 
