@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pyarchinit_web
+      POSTGRES_PASSWORD: pyarchinit_web_2024
+      POSTGRES_DB: pyarchinit_web
+    volumes:
+      - web_pgdata:/var/lib/postgresql/data
+    # No external port - only accessible from app container
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://pyarchinit_web:pyarchinit_web_2024@db:5432/pyarchinit_web
+      NEXTAUTH_URL: http://10.0.1.13:8080
+      NEXTAUTH_SECRET: pyarchinit-web-secret-change-in-production
+    depends_on:
+      - db
+    volumes:
+      - web_uploads:/app/uploads
+    ports:
+      - "8080:3000"
+
+volumes:
+  web_pgdata:
+  web_uploads:

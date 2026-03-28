@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth-utils";
 
 // GET - list all threads for admin moderation
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   await requireAdmin();
   const threads = await prisma.forumThread.findMany({
@@ -17,6 +19,7 @@ export async function GET() {
 }
 
 // PATCH - pin/lock/delete a thread or delete a reply
+
 export async function PATCH(req: NextRequest) {
   await requireAdmin();
 

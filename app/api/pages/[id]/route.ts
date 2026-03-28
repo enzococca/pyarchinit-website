@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
@@ -11,6 +13,7 @@ export async function GET(
   if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(page);
 }
+
 
 export async function PUT(
   req: NextRequest,
@@ -31,6 +34,7 @@ export async function PUT(
 
   return NextResponse.json(page);
 }
+
 
 export async function DELETE(
   _req: NextRequest,

@@ -4,9 +4,16 @@ import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20" as any,
-});
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY is not configured");
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2024-06-20" as any,
+  });
+}
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -77,6 +84,7 @@ export async function POST(req: NextRequest) {
   // Paid course: create Stripe checkout session
   const origin = req.headers.get("origin") ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
+  const stripe = getStripe();
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [

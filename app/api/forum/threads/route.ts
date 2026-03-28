@@ -13,6 +13,8 @@ function makeSlug(title: string): string {
     .replace(/^-|-$/g, "");
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const categorySlug = searchParams.get("category");
@@ -40,6 +42,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ threads, total, page, pages: Math.ceil(total / PAGE_SIZE) });
 }
+
 
 export async function POST(req: NextRequest) {
   const session = await getSession();

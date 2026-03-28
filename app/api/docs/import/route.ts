@@ -26,6 +26,8 @@ function fileOrder(filename: string): number {
   return match ? parseInt(match[1], 10) : 999;
 }
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   try {
     await requireAdmin();

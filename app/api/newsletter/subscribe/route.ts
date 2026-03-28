@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { randomUUID } from "crypto";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const { email, name } = await req.json();
 

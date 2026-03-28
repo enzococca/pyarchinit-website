@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
@@ -39,6 +41,7 @@ interface ModuleInput {
   order: number;
   lessons: LessonInput[];
 }
+
 
 export async function PUT(
   req: NextRequest,
@@ -167,6 +170,7 @@ export async function PUT(
 
   return NextResponse.json(updated);
 }
+
 
 export async function DELETE(
   _req: NextRequest,

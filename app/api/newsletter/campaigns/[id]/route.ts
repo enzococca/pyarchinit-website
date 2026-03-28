@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth-utils";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -19,6 +21,7 @@ export async function GET(
 
   return NextResponse.json(campaign);
 }
+
 
 export async function PATCH(
   req: NextRequest,

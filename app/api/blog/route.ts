@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   await requireAdmin();
   const posts = await prisma.blogPost.findMany({
@@ -10,6 +12,7 @@ export async function GET() {
   });
   return NextResponse.json(posts);
 }
+
 
 export async function POST(req: NextRequest) {
   await requireAdmin();

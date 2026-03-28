@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   await requireAdmin();
 
@@ -48,6 +50,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json(result);
 }
+
 
 export async function POST(req: NextRequest) {
   await requireAdmin();
