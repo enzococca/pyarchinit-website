@@ -1,14 +1,8 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_PORT === "465",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 interface EmailOptions {
   to: string;
@@ -17,14 +11,15 @@ interface EmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: EmailOptions) {
-  // Skip if SMTP not configured
-  if (!process.env.SMTP_HOST) {
-    console.log(`[Email skipped - no SMTP] To: ${to}, Subject: ${subject}`);
+  if (!resend) {
+    console.log(`[Email skipped - no RESEND_API_KEY] To: ${to}, Subject: ${subject}`);
     return;
   }
 
-  await transporter.sendMail({
-    from: `"pyArchInit" <${process.env.SMTP_USER || "noreply@pyarchinit.org"}>`,
+  const from = process.env.EMAIL_FROM || "pyArchInit <onboarding@resend.dev>";
+
+  await resend.emails.send({
+    from,
     to,
     subject,
     html: wrapInTemplate(subject, html),
@@ -43,7 +38,7 @@ function wrapInTemplate(title: string, content: string): string {
       </div>
       <div style="text-align:center;margin-top:24px;color:#8B7355;font-size:12px;">
         <p>pyArchInit - Piattaforma Open Source per l'Archeologia</p>
-        <p><a href="${process.env.NEXTAUTH_URL || 'https://pyarchinit.org'}" style="color:#00D4AA;">pyarchinit.org</a></p>
+        <p><a href="https://pyarchinit.com" style="color:#00D4AA;">pyarchinit.com</a></p>
       </div>
     </div>
   `;
