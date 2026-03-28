@@ -9,7 +9,6 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "*.b-cdn.net" },
       { protocol: "https", hostname: "flyover.adarteinfo.it" },
-      { protocol: "https", hostname: "www.adarteinfo.it" },
       { protocol: "https", hostname: "pyarchinit.org" },
     ],
     localPatterns: [

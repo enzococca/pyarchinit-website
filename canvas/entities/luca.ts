@@ -387,8 +387,8 @@ export class Luca {
     ctx.ellipse(0, -249, 22, 7, 0, Math.PI, Math.PI * 2);
     ctx.fill();
 
-    // ─── adArte LOGO ON BACK ──────────────────────────────────────────────
-    this.drawAdArteLogo(ctx);
+    // ─── pyArchInit LOGO ON BACK ──────────────────────────────────────────
+    this.drawPyArchInitLogo(ctx);
 
     // Subtle monitor glow reflection on fabric
     const fabricGlow = ctx.createRadialGradient(0, -200, 10, 0, -200, 80);
@@ -417,46 +417,29 @@ export class Luca {
     ctx.fill();
   }
 
-  private drawAdArteLogo(ctx: CanvasRenderingContext2D): void {
+  private drawPyArchInitLogo(ctx: CanvasRenderingContext2D): void {
     // Position: upper back, centered around y=-210
     const cx = 0;
     const cy = -210;
 
     ctx.save();
 
-    // ── "ad" in small gold/ochre text ────────────────────────────────────
-    ctx.font = "bold 8px sans-serif";
-    ctx.fillStyle = "#C8A84E";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("ad", cx - 6, cy - 8);
+    if (this.logoLoaded && this.logoImage) {
+      // Draw the actual pyArchInit logo image on the back
+      const size = 22;
+      ctx.drawImage(this.logoImage, cx - size / 2, cy - size / 2 - 4, size, size);
+    } else {
+      // Fallback: draw "py" in teal and "AI" in white as a monogram
+      ctx.font = "bold 8px monospace";
+      ctx.fillStyle = "#00D4AA";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("py", cx - 2, cy - 7);
 
-    // ── "Arte" in larger white text ───────────────────────────────────────
-    ctx.font = "bold 13px sans-serif";
-    ctx.fillStyle = "rgba(255, 255, 255, 0.90)";
-    ctx.textAlign = "center";
-    ctx.fillText("Arte", cx - 4, cy + 3);
-
-    // ── Golden spiral next to "Arte" ──────────────────────────────────────
-    // Draw a spiral using multiple arc segments that grow in radius
-    const spiralCx = cx + 17;
-    const spiralCy = cy + 2;
-    ctx.strokeStyle = "#C8A84E";
-    ctx.lineWidth = 1;
-    ctx.lineCap = "round";
-
-    ctx.beginPath();
-    let r = 1.0;
-    const step = 0.35;
-    // Approximate Archimedean spiral with arc segments
-    for (let i = 0; i < 16; i++) {
-      const startAngle = (i / 16) * Math.PI * 4;
-      const endAngle = ((i + 1) / 16) * Math.PI * 4;
-      const midR = r + step * 0.5;
-      ctx.arc(spiralCx, spiralCy, midR, startAngle, endAngle);
-      r += step;
+      ctx.font = "bold 11px monospace";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.90)";
+      ctx.fillText("ArchInit", cx, cy + 4);
     }
-    ctx.stroke();
 
     ctx.restore();
   }

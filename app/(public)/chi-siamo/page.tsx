@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const founders = [
   {
     name: "Luca Mandolesi",
-    role: "Fondatore / Direttore Settore ICT e VPIA",
+    role: "Fondatore di pyArchInit / Direttore ICT",
     photo: "/images/team_luca.jpg",
     bio: "Laureato in Scienze Archeologiche con indirizzo medievale presso l'Università di Siena. Dal 2005 gestisce lo sviluppo di pyArchInit, il plugin open-source per QGIS dedicato alla gestione dei dati di scavo su piattaforma GIS. Esperto in rilievo GNSS, Structure From Motion, QGIS e modellazione 3D con Blender. Co-fondatore di GFOSS.it e ArcheoFOSS. Dirige il programma di formazione Flyover Academy.",
     registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.5059",
@@ -25,7 +25,7 @@ const founders = [
   },
   {
     name: "Enzo Cocca",
-    role: "Direttore Sviluppo e Innovazione / Settore ICT",
+    role: "Fondatore di pyArchInit / Sviluppo e Innovazione",
     photo: "/images/team_enzo.jpg",
     bio: "Specializzato in informatica applicata all'archeologia e alla preistoria. Dottore di ricerca in Scienze e Tecnologie per l'Archeologia e i Beni Culturali. Sviluppa soluzioni software per la documentazione e gestione dei dati archeologici. Attivo in progetti di ricerca in Italia, Africa, Asia, Medio Oriente e Indonesia.",
     registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.4045",
@@ -142,42 +142,24 @@ export default function ChiSiamoPage() {
 
       <SectionDivider variant="light-to-dark" />
 
-      {/* adArte */}
+      {/* pyArchInit Links */}
       <section className="bg-primary py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <ScrollReveal>
             <Image
-              src="/images/logo_adarte_full.png"
-              alt="adArte"
-              width={200}
+              src="/images/logo_pyarchinit_official.png"
+              alt="pyArchInit"
+              width={80}
               height={80}
               className="mx-auto mb-8"
             />
-            <h2 className="text-3xl font-mono text-teal mb-6">adArte s.r.l.</h2>
+            <h2 className="text-3xl font-mono text-teal mb-6">pyArchInit</h2>
             <p className="text-sand/60 leading-relaxed mb-8">
-              pyArchInit è sviluppato e mantenuto da <strong className="text-sand">adArte s.r.l.</strong>,
-              società specializzata in archeologia, restauro e ICT per i beni culturali.
-              Con sede in Italia, adArte combina competenze archeologiche tradizionali
-              con tecnologie all&apos;avanguardia: GIS, droni, fotogrammetria, modellazione 3D
-              e intelligenza artificiale applicata ai beni culturali.
+              pyArchInit è un progetto open source sviluppato e mantenuto da Luca Mandolesi ed Enzo Cocca.
+              Il progetto combina competenze archeologiche con tecnologie all&apos;avanguardia: GIS, droni,
+              fotogrammetria, modellazione 3D e intelligenza artificiale applicata ai beni culturali.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <a
-                href="https://www.adarteinfo.it"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border border-sand/20 text-sand/60 font-mono text-sm px-5 py-2.5 rounded-full hover:border-teal hover:text-teal transition"
-              >
-                adarteinfo.it
-              </a>
-              <a
-                href="https://flyover.adarteinfo.it"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border border-sand/20 text-sand/60 font-mono text-sm px-5 py-2.5 rounded-full hover:border-teal hover:text-teal transition"
-              >
-                Flyover Academy
-              </a>
               <a
                 href="https://github.com/pyarchinit"
                 target="_blank"
