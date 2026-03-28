@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, FileText, GraduationCap, PenSquare,
-  ImageIcon, BookOpen, Users, Mail, Settings, MessageSquare, Newspaper,
+  ImageIcon, BookOpen, Users, Mail, Settings, MessageSquare, Newspaper, Boxes,
 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/admin/contatti", label: "Contatti", icon: Mail },
   { href: "/admin/forum", label: "Forum", icon: MessageSquare },
   { href: "/admin/newsletter", label: "Newsletter", icon: Newspaper },
+  { href: "/admin/progetti", label: "Progetti", icon: Boxes },
   { href: "/admin/impostazioni", label: "Impostazioni", icon: Settings },
 ];
 

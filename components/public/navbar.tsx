@@ -9,6 +9,7 @@ import { useSearch } from "@/components/public/search-provider";
 
 const navLinks = [
   { href: "/chi-siamo", label: "Chi siamo" },
+  { href: "/progetti", label: "Progetti" },
   { href: "/corsi", label: "Corsi" },
   { href: "/docs", label: "Documentazione" },
   { href: "/video", label: "Video" },

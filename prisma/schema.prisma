@@ -352,3 +352,19 @@ enum CampaignStatus {
   SENDING
   SENT
 }
+
+// ============ PROJECTS ============
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  url         String?
+  githubUrl   String?
+  imageUrl    String?
+  status      String   @default("active")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
