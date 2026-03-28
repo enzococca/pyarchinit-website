@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const thoughts = [
   "Struttura DB per le US...",
@@ -150,7 +151,16 @@ export default function LandingPage() {
             loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          {/* pyArchInit logo text */}
+          {/* pyArchInit logo image + text */}
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/images/logo_pyarchinit_official.png"
+              alt="pyArchInit"
+              width={72}
+              height={72}
+              className="drop-shadow-lg"
+            />
+          </div>
           <h1 className="text-3xl md:text-5xl font-mono font-bold text-sand mb-2 text-center tracking-tight">
             py<span className="text-teal">ArchInit</span>
           </h1>

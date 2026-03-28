@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { X, Menu } from "lucide-react";
 
 const navLinks = [
@@ -23,8 +24,9 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="text-teal font-mono text-xl font-bold tracking-tight">
-              pyArchInit
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/images/logo_pyarchinit_official.png" alt="pyArchInit" width={32} height={32} />
+              <span className="text-teal font-mono font-bold text-lg">pyArchInit</span>
             </Link>
 
             {/* Desktop nav */}
@@ -66,10 +68,11 @@ export function Navbar() {
           <div className="flex items-center justify-between px-4 h-16 border-b border-sand/10">
             <Link
               href="/"
-              className="text-teal font-mono text-xl font-bold"
+              className="flex items-center gap-2"
               onClick={() => setMobileOpen(false)}
             >
-              pyArchInit
+              <Image src="/images/logo_pyarchinit_official.png" alt="pyArchInit" width={32} height={32} />
+              <span className="text-teal font-mono font-bold text-lg">pyArchInit</span>
             </Link>
             <button
               className="p-2 text-sand/70 hover:text-sand transition-colors"

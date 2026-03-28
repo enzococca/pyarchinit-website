@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Users, Building2, Code2 } from "lucide-react";
 import { SectionDivider } from "@/components/public/section-divider";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
@@ -49,10 +50,34 @@ export default function HomePage() {
   return (
     <main>
       {/* Hero */}
-      <section className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-primary via-[#0d1524] to-[#0a1020] flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
+      <section className="relative min-h-[calc(100vh-4rem)] flex items-center overflow-hidden">
+        {/* Hero background photo */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/hero_scavo.jpg"
+            alt="Scavo archeologico"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/92 via-primary/75 to-[#0a1020]/85" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
           <ScrollReveal>
             <div className="max-w-3xl">
+              {/* Logo */}
+              <div className="mb-6">
+                <Image
+                  src="/images/logo_pyarchinit_official.png"
+                  alt="pyArchInit"
+                  width={64}
+                  height={64}
+                  className="drop-shadow-lg"
+                />
+              </div>
               <p className="text-teal font-mono text-sm tracking-widest uppercase mb-6">
                 Open Source &middot; Archeologia Digitale
               </p>
@@ -60,10 +85,10 @@ export default function HomePage() {
                 Piattaforma Open Source per{" "}
                 <span className="text-teal">l&apos;Archeologia Digitale</span>
               </h1>
-              <p className="text-lg text-sand/60 mb-10 leading-relaxed max-w-xl">
-                pyArchInit è lo strumento professionale per la gestione dei dati
-                archeologici. Documentazione, analisi GIS, database integrati e
-                formazione specializzata.
+              <p className="text-lg text-sand/70 mb-10 leading-relaxed max-w-xl">
+                Progetto nato nel 2005 per creare un plugin Python per QGIS per la gestione
+                dei dati archeologici su piattaforma GIS. Integrazione di dati alfanumerici,
+                cartografici e multimediali.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -102,10 +127,11 @@ export default function HomePage() {
                 Cosa è pyArchInit?
               </h2>
               <p className="text-primary/70 text-lg leading-relaxed">
-                pyArchInit è una piattaforma open source nata dall&apos;esigenza di avere
-                strumenti moderni e accessibili per la gestione dei dati archeologici. Dalla
-                documentazione di scavo all&apos;analisi GIS, offre un ecosistema integrato
-                per professionisti e ricercatori del settore.
+                pyArchInit è un plugin Python per QGIS (GIS open-source) che consente
+                l&apos;integrazione di dati alfanumerici, spaziali e multimediali in
+                un&apos;unica piattaforma pensata per la documentazione archeologica
+                (unità stratigrafiche, reperti, strutture, siti) e la loro
+                rappresentazione GIS.
               </p>
             </div>
           </ScrollReveal>
@@ -127,6 +153,41 @@ export default function HomePage() {
 
       {/* Divider */}
       <SectionDivider variant="light-to-dark" />
+
+      {/* Chi usa pyArchInit */}
+      <section className="bg-primary py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center mb-10">
+              <p className="text-teal font-mono text-xs tracking-widest uppercase mb-3">
+                Usato da
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-mono font-bold text-sand mb-3">
+                Chi usa pyArchInit?
+              </h2>
+              <p className="text-sand/40 text-sm max-w-lg mx-auto">
+                Università, enti pubblici e progetti di ricerca in Italia e nel mondo.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              {[
+                "Ludwig Maximilian Universität München",
+                "Università di Salerno",
+                "Università di Pisa",
+                "Parco Archeologico di Paestum",
+                "Progetti in Italia e Libano",
+              ].map((name) => (
+                <div
+                  key={name}
+                  className="px-5 py-3 rounded-card bg-code-bg border border-sand/10 text-sand/60 text-sm font-mono hover:border-teal/30 hover:text-sand/80 transition-colors text-center"
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
 
       {/* Per Chi */}
       <section className="bg-primary py-20">

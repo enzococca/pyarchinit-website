@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, FileText, GraduationCap, PenSquare,
@@ -27,8 +28,9 @@ export function AdminSidebar() {
 
   return (
     <aside className="w-64 bg-code-bg min-h-screen p-4 flex flex-col">
-      <Link href="/admin" className="text-teal font-mono text-xl font-bold mb-8 px-3">
-        pyArchInit
+      <Link href="/admin" className="flex items-center gap-2 mb-8 px-3">
+        <Image src="/images/logo_pyarchinit_official.png" alt="pyArchInit" width={28} height={28} />
+        <span className="text-teal font-mono text-xl font-bold">pyArchInit</span>
       </Link>
       <nav className="space-y-1 flex-1">
         {navItems.map((item) => {

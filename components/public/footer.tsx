@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { NewsletterForm } from "@/components/public/newsletter-form";
 
 const columns = [
@@ -93,7 +94,10 @@ export function Footer() {
         </div>
 
         <div className="border-t border-sand/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-teal font-mono text-sm font-bold">pyArchInit</span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/images/logo_pyarchinit_official.png" alt="pyArchInit" width={24} height={24} />
+            <span className="text-teal font-mono text-sm font-bold">pyArchInit</span>
+          </Link>
           <p className="text-xs text-sand/30 text-center">
             &copy; {new Date().getFullYear()} pyArchInit. Piattaforma open source per l&apos;archeologia digitale.
           </p>
