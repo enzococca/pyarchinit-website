@@ -8,14 +8,13 @@ services:
       POSTGRES_DB: pyarchinit_web
     volumes:
       - web_pgdata:/var/lib/postgresql/data
-    # No external port - only accessible from app container
 
   app:
     build: .
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://pyarchinit_web:pyarchinit_web_2024@db:5432/pyarchinit_web
-      NEXTAUTH_URL: http://10.0.1.13:8080
+      NEXTAUTH_URL: https://pyarchinit.com
       NEXTAUTH_SECRET: pyarchinit-web-secret-change-in-production
     depends_on:
       - db
@@ -23,6 +22,13 @@ services:
       - web_uploads:/app/uploads
     ports:
       - "8080:3000"
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token eyJhIjoiZGQxNmY5ZDU5OWRkZjI0ZGRiOWViNzhkYWNmOWZlYzUiLCJ0IjoiYTlmZDllY2QtNjdiYy00NWE1LWI2NmEtMzQzYjgyMDI0ODMxIiwicyI6IllXVmxOV1kzTWpNdFlUYzRaQzAwTkRobUxUZzVZamd0TkRGbVl6a3hNRE00WW1KbCJ9
+    depends_on:
+      - app
 
 volumes:
   web_pgdata:
