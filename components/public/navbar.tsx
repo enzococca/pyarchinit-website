@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, Menu } from "lucide-react";
+import { SmartSearchTrigger } from "@/components/public/smart-search";
+import { useSearch } from "@/components/public/search-provider";
 
 const navLinks = [
   { href: "/chi-siamo", label: "Chi siamo" },
@@ -18,6 +20,7 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { openSearch } = useSearch();
 
   return (
     <>
@@ -45,6 +48,7 @@ export function Navbar() {
 
             {/* CTA + hamburger */}
             <div className="flex items-center gap-3">
+              <SmartSearchTrigger onClick={openSearch} />
               <Link
                 href="/corsi"
                 className="hidden md:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"

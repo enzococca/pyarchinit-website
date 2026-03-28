@@ -6,6 +6,7 @@ import { SectionDivider } from "@/components/public/section-divider";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
 import { AnimatedCounter } from "@/components/public/animated-counter";
 import { NewsletterForm } from "@/components/public/newsletter-form";
+import { HomeSearchBar } from "@/components/public/home-search-bar";
 
 export const metadata: Metadata = {
   title: "pyArchInit - Piattaforma Open Source per l'Archeologia Digitale",
@@ -109,6 +110,11 @@ export default function HomePage() {
                 >
                   Contribuisci
                 </Link>
+              </div>
+
+              {/* Smart search bar */}
+              <div className="mt-8">
+                <HomeSearchBar />
               </div>
             </div>
           </ScrollReveal>
