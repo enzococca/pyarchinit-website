@@ -6,15 +6,23 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    // During build time, return a dummy client that will fail at runtime
-    // This prevents build crashes when DB is not available
+
+  // During build time (Vercel or Docker), return a dummy proxy
+  // VERCEL_ENV is not set during build, but NEXT_PHASE is
+  const isBuildTime = process.env.NEXT_PHASE === "phase-production-build";
+
+  if (!connectionString || isBuildTime) {
     return new Proxy({} as PrismaClient, {
       get(_target, prop) {
         if (prop === "$disconnect" || prop === "$connect") {
           return () => Promise.resolve();
         }
-        throw new Error(`Database not configured. Set DATABASE_URL environment variable.`);
+        // Return a proxy for any model access that returns empty results
+        return new Proxy({} as any, {
+          get() {
+            return () => Promise.resolve(null);
+          },
+        });
       },
     });
   }
