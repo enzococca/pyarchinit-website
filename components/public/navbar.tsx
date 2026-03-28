@@ -11,10 +11,10 @@ const navLinks = [
   { href: "/chi-siamo", label: "Chi siamo" },
   { href: "/corsi", label: "Corsi" },
   { href: "/docs", label: "Documentazione" },
+  { href: "/video", label: "Video" },
   { href: "/servizi", label: "Servizi" },
   { href: "/community", label: "Community" },
   { href: "/forum", label: "Forum" },
-  { href: "/blog", label: "Blog" },
   { href: "/contatti", label: "Contatti" },
 ];
 

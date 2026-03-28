@@ -3,33 +3,23 @@ import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// Static YouTube videos - fill in real URLs after scraping the channel
+// Real YouTube videos from @pyarchinit channel
 const youtubeVideos = [
-  {
-    title: "pyArchInit - Installazione e Configurazione",
-    url: "https://www.youtube.com/watch?v=placeholder1",
-    type: "video" as const,
-  },
-  {
-    title: "pyArchInit - Gestione Unità Stratigrafiche",
-    url: "https://www.youtube.com/watch?v=placeholder2",
-    type: "video" as const,
-  },
-  {
-    title: "pyArchInit - Import/Export GIS",
-    url: "https://www.youtube.com/watch?v=placeholder3",
-    type: "video" as const,
-  },
-  {
-    title: "pyArchInit - Matrice di Harris",
-    url: "https://www.youtube.com/watch?v=placeholder4",
-    type: "video" as const,
-  },
-  {
-    title: "pyArchInit - Fotogrammetria e Structure from Motion",
-    url: "https://www.youtube.com/watch?v=placeholder5",
-    type: "video" as const,
-  },
+  { title: "pyArchInit - Nuovo sistema simboli per USM", url: "https://www.youtube.com/watch?v=UjJOEty0vSI" },
+  { title: "Gestione alzati pyarchinitGoes2Blend3D", url: "https://www.youtube.com/watch?v=UwvDLGMD80s" },
+  { title: "Come spostare i punti da coordinate relative ad assolute sfruttando il Segnalibro", url: "https://www.youtube.com/watch?v=sKZwFFI6TxQ" },
+  { title: "Drone Unit for pyArchInit", url: "https://www.youtube.com/watch?v=06CZCq4cREI" },
+  { title: "pyArchInit - Tafonomia", url: "https://www.youtube.com/watch?v=tQfZ2kxicY0" },
+  { title: "pyArchInit - Strutture e ipotesi", url: "https://www.youtube.com/watch?v=e3jCS17g43s" },
+  { title: "pyArchInit - Campioni", url: "https://www.youtube.com/watch?v=w-VOrRgGcfw" },
+  { title: "pyArchInit - Reperti", url: "https://www.youtube.com/watch?v=v4G03oX9SCM" },
+  { title: "I layer pyunitastratigrafiche e pyarchinit_quote", url: "https://www.youtube.com/watch?v=_n_O6TCdObY" },
+  { title: "Layer pyarchinit_sezioni", url: "https://www.youtube.com/watch?v=sfW7xOsmLFc" },
+  { title: "Layer pyarchinit_sondaggi", url: "https://www.youtube.com/watch?v=naCytTz0sSk" },
+  { title: "Layer pyarchinit_individui", url: "https://www.youtube.com/watch?v=388hhkz55EY" },
+  { title: "Layer pyarchinit_siti (puntuali e poligonali)", url: "https://www.youtube.com/watch?v=AQFYxNg4Agc" },
+  { title: "Layer pyarchinit_punti_rif", url: "https://www.youtube.com/watch?v=SU1hJatrf0E" },
+  { title: "Layer pyarchinit_linee_riferimento", url: "https://www.youtube.com/watch?v=BbnLfQDfkxg" },
 ];
 
 export interface SearchResult {
