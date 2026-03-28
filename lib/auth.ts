@@ -5,7 +5,7 @@ import { prisma } from "./db";
 import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  // Note: PrismaAdapter removed - incompatible with Credentials provider in NextAuth v5 beta
   session: { strategy: "jwt" },
   pages: {
     signIn: "/admin/login",
