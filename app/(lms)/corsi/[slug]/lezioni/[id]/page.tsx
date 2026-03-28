@@ -56,7 +56,7 @@ export default async function LessonPlayerPage({ params }: PageProps) {
 
   // Find next lesson in module
   const lessons = lesson.module.lessons;
-  const currentIndex = lessons.findIndex((l) => l.id === params.id);
+  const currentIndex = lessons.findIndex((l: { id: string }) => l.id === params.id);
   const nextLesson = currentIndex >= 0 ? lessons[currentIndex + 1] : undefined;
 
   const content = lesson.content as Record<string, any>;
