@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Save, ArrowLeft, CheckCircle } from "lucide-react";
+import { Save, ArrowLeft, CheckCircle, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { BlockEditor } from "@/components/admin/block-editor";
 import { Block } from "@/lib/blocks";
@@ -87,6 +87,37 @@ export default function AdminPageEditorPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Draft warning banner */}
+      {status === "DRAFT" && (
+        <div className="flex items-start gap-3 bg-ochre/10 border border-ochre/30 rounded-card p-3 mb-5 text-ochre">
+          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+          <p className="text-xs leading-relaxed">
+            <span className="font-semibold">Bozza — non visibile sul sito.</span>{" "}
+            La pagina sarà visibile sul sito pubblico solo quando lo stato è{" "}
+            <span className="font-semibold">Pubblicata</span>. Cambia lo stato
+            qui sotto e salva per renderla pubblica.
+          </p>
+        </div>
+      )}
+
+      {status === "PUBLISHED" && (
+        <div className="flex items-center gap-3 bg-teal/10 border border-teal/30 rounded-card p-3 mb-5 text-teal">
+          <Eye size={16} className="shrink-0" />
+          <p className="text-xs">
+            <span className="font-semibold">Pubblicata — visibile sul sito</span>{" "}
+            all&apos;indirizzo{" "}
+            <a
+              href={`/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-teal/80"
+            >
+              /{slug}
+            </a>
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link href="/admin/pagine" className="text-sand/40 hover:text-sand transition">
@@ -103,6 +134,26 @@ export default function AdminPageEditorPage() {
           {saveError && (
             <span className="text-xs text-terracotta">Errore nel salvataggio</span>
           )}
+
+          {/* Prominent status toggle next to save button */}
+          <button
+            onClick={() =>
+              setStatus((s) => (s === "DRAFT" ? "PUBLISHED" : "DRAFT"))
+            }
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-card text-sm font-medium transition border ${
+              status === "PUBLISHED"
+                ? "bg-teal/10 border-teal/40 text-teal hover:bg-teal/20"
+                : "bg-ochre/10 border-ochre/30 text-ochre hover:bg-ochre/20"
+            }`}
+          >
+            {status === "PUBLISHED" ? (
+              <Eye size={14} />
+            ) : (
+              <EyeOff size={14} />
+            )}
+            {status === "PUBLISHED" ? "Pubblicata" : "Bozza"}
+          </button>
+
           <button
             onClick={() => save(false)}
             disabled={saving}

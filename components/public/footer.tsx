@@ -2,7 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { NewsletterForm } from "@/components/public/newsletter-form";
 
-const columns = [
+interface CmsPage {
+  slug: string;
+  title: string;
+}
+
+interface FooterProps {
+  cmsPages?: CmsPage[];
+}
+
+const staticColumns = [
   {
     title: "Navigazione",
     links: [
@@ -41,7 +50,7 @@ const columns = [
   },
 ];
 
-export function Footer() {
+export function Footer({ cmsPages = [] }: FooterProps) {
   return (
     <footer className="bg-code-bg border-t border-sand/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -61,7 +70,7 @@ export function Footer() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-          {columns.map((col) => (
+          {staticColumns.map((col) => (
             <div key={col.title}>
               <h3 className="text-xs font-mono text-teal uppercase tracking-widest mb-4">
                 {col.title}
@@ -92,6 +101,27 @@ export function Footer() {
             </div>
           ))}
         </div>
+
+        {/* CMS pages section — only shown if there are published pages */}
+        {cmsPages.length > 0 && (
+          <div className="mb-10 pb-8 border-b border-sand/10">
+            <h3 className="text-xs font-mono text-teal uppercase tracking-widest mb-4">
+              Pagine
+            </h3>
+            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+              {cmsPages.map((page) => (
+                <li key={page.slug}>
+                  <Link
+                    href={`/${page.slug}`}
+                    className="text-sm text-sand/50 hover:text-sand transition-colors"
+                  >
+                    {page.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="border-t border-sand/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2">
