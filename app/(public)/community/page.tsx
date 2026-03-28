@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, GitPullRequest, Users } from "lucide-react";
+import { BookOpen, GitPullRequest, MessageSquare } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Community | pyArchInit",
@@ -61,13 +61,13 @@ const communityCards: CardData[] = [
     external: true,
   },
   {
-    iconEl: <Users size={24} className="text-teal" />,
-    title: "Discussioni",
+    iconEl: <MessageSquare size={24} className="text-teal" />,
+    title: "Forum",
     description:
       "Forum della community per domande, idee e confronto tra utenti. Connettiti con archeologi e sviluppatori da tutto il mondo.",
-    linkLabel: "Partecipa alle discussioni",
-    href: "https://github.com/pyarchinit/discussions",
-    external: true,
+    linkLabel: "Vai al Forum",
+    href: "/forum",
+    external: false,
   },
 ];
 

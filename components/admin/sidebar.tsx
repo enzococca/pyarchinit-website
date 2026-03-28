@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, FileText, GraduationCap, PenSquare,
-  ImageIcon, BookOpen, Users, Mail, Settings,
+  ImageIcon, BookOpen, Users, Mail, Settings, MessageSquare,
 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/docs", label: "Documentazione", icon: BookOpen },
   { href: "/admin/studenti", label: "Studenti", icon: Users },
   { href: "/admin/contatti", label: "Contatti", icon: Mail },
+  { href: "/admin/forum", label: "Forum", icon: MessageSquare },
   { href: "/admin/impostazioni", label: "Impostazioni", icon: Settings },
 ];
 
