@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth-utils";
+import { sendEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -34,6 +35,38 @@ export async function POST(req: NextRequest) {
     where: { id: threadId },
     data: { updatedAt: new Date() },
   });
+
+  // Notify thread author if different from reply author
+  if (thread.userId !== userId) {
+    const [threadAuthor, replyAuthor] = await Promise.all([
+      prisma.user.findUnique({ where: { id: thread.userId } }),
+      prisma.user.findUnique({ where: { id: userId } }),
+    ]);
+
+    if (threadAuthor?.email) {
+      const siteUrl = process.env.NEXTAUTH_URL ?? "https://pyarchinit.org";
+      const threadUrl = `${siteUrl}/forum/thread/${thread.slug}`;
+      sendEmail({
+        to: threadAuthor.email,
+        subject: `Nuova risposta al tuo thread: ${thread.title}`,
+        html: `
+          <p style="color:#E8DCC8;margin-bottom:8px;">
+            <strong style="color:#00D4AA;">${replyAuthor?.name ?? replyAuthor?.email ?? "Qualcuno"}</strong>
+            ha risposto al tuo thread nel forum:
+          </p>
+          <blockquote style="border-left:3px solid #00D4AA;padding-left:16px;color:#8B7355;font-style:italic;margin:16px 0;">
+            "${thread.title}"
+          </blockquote>
+          <a
+            href="${threadUrl}"
+            style="display:inline-block;background:#00D4AA;color:#0F1729;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:8px;"
+          >
+            Vedi la risposta
+          </a>
+        `,
+      }).catch(console.error);
+    }
+  }
 
   return NextResponse.json(reply, { status: 201 });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth-utils";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -45,6 +46,31 @@ export async function POST(req: NextRequest) {
     await prisma.enrollment.create({
       data: { userId, courseId },
     });
+
+    // Send welcome email
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user?.email) {
+      const siteUrl = process.env.NEXTAUTH_URL ?? "https://pyarchinit.org";
+      sendEmail({
+        to: user.email,
+        subject: `Benvenuto nel corso: ${course.title}`,
+        html: `
+          <p style="color:#E8DCC8;margin-bottom:16px;">
+            Ciao ${user.name ?? ""}! La tua iscrizione al corso <strong style="color:#00D4AA;">${course.title}</strong> è stata completata.
+          </p>
+          <p style="color:#8B7355;margin-bottom:24px;">
+            Puoi iniziare subito a studiare dalla tua dashboard.
+          </p>
+          <a
+            href="${siteUrl}/dashboard"
+            style="display:inline-block;background:#00D4AA;color:#0F1729;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;"
+          >
+            Vai alla dashboard
+          </a>
+        `,
+      }).catch(console.error);
+    }
+
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

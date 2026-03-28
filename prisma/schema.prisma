@@ -323,3 +323,30 @@ model Testimonial {
   order    Int     @default(0)
   visible  Boolean @default(true)
 }
+
+// ============ NEWSLETTER ============
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  confirmed      Boolean   @default(false)
+  confirmToken   String?   @unique
+  createdAt      DateTime  @default(now())
+  unsubscribedAt DateTime?
+}
+
+model NewsletterCampaign {
+  id        String         @id @default(cuid())
+  subject   String
+  content   String         @db.Text
+  status    CampaignStatus @default(DRAFT)
+  sentAt    DateTime?
+  createdAt DateTime       @default(now())
+}
+
+enum CampaignStatus {
+  DRAFT
+  SENDING
+  SENT
+}

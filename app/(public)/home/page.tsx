@@ -4,6 +4,7 @@ import { Users, Building2, Code2 } from "lucide-react";
 import { SectionDivider } from "@/components/public/section-divider";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
 import { AnimatedCounter } from "@/components/public/animated-counter";
+import { NewsletterForm } from "@/components/public/newsletter-form";
 
 export const metadata: Metadata = {
   title: "pyArchInit - Piattaforma Open Source per l'Archeologia Digitale",
@@ -163,6 +164,28 @@ export default function HomePage() {
               </ScrollReveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Divider */}
+      <SectionDivider variant="dark-to-light" />
+
+      {/* Newsletter */}
+      <section className="bg-primary py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="max-w-2xl mx-auto text-center">
+              <h2 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-4">
+                Resta aggiornato
+              </h2>
+              <p className="text-sand/50 mb-8 text-lg">
+                Iscriviti alla newsletter per ricevere novità su corsi, aggiornamenti e guide.
+              </p>
+              <div className="max-w-md mx-auto">
+                <NewsletterForm />
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
