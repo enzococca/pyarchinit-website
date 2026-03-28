@@ -1,14 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL;
 
-  if (!connectionString) {
-    // No DB URL at all - return dummy proxy (build time without env vars)
+  if (!url) {
     return new Proxy({} as PrismaClient, {
       get(_target, prop) {
         if (prop === "$disconnect" || prop === "$connect") {
@@ -23,8 +21,8 @@ function createPrismaClient(): PrismaClient {
     });
   }
 
-  const pool = new pg.Pool({ connectionString });
-  const adapter = new PrismaPg(pool);
+  // Use PrismaPg adapter with connection string directly (no pg.Pool)
+  const adapter = new PrismaPg({ connectionString: url });
   return new PrismaClient({ adapter });
 }
 
