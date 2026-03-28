@@ -44,7 +44,7 @@ export function NewsletterForm() {
   if (status === "success") {
     return (
       <div className="bg-teal/10 border border-teal/30 rounded-card px-5 py-4 text-teal text-sm">
-        Controlla la tua email per confermare l&apos;iscrizione.
+        Iscritto! Grazie per esserti iscritto alla newsletter.
       </div>
     );
   }
@@ -52,7 +52,7 @@ export function NewsletterForm() {
   if (status === "already") {
     return (
       <div className="bg-teal/10 border border-teal/30 rounded-card px-5 py-4 text-teal text-sm">
-        Sei già iscritto alla newsletter!
+        Sei già iscritto alla newsletter.
       </div>
     );
   }
