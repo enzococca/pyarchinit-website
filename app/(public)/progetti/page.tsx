@@ -9,16 +9,11 @@ const db = prisma as any;
 import { ScrollReveal } from "@/components/public/scroll-reveal";
 import { SectionDivider } from "@/components/public/section-divider";
 import type { Metadata } from "next";
+import { getServerLocale, t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Progetti - pyArchInit",
   description: "Scopri tutti i progetti dell'ecosistema pyArchInit: strumenti open source per l'archeologia digitale.",
-};
-
-const statusLabel: Record<string, string> = {
-  active: "Attivo",
-  "in-development": "In sviluppo",
-  archived: "Archiviato",
 };
 
 const statusClass: Record<string, string> = {
@@ -27,7 +22,7 @@ const statusClass: Record<string, string> = {
   archived: "bg-sand/10 text-sand/50 border border-sand/10",
 };
 
-// Canonical category order and labels
+// Canonical category order
 const CATEGORY_ORDER = [
   "Plugin QGIS",
   "Web App",
@@ -49,6 +44,8 @@ interface ProjectRecord {
 }
 
 export default async function ProgettiPage() {
+  const locale = await getServerLocale();
+
   const projects: ProjectRecord[] = await db.project.findMany({
     orderBy: { order: "asc" },
   });
@@ -91,11 +88,10 @@ export default async function ProgettiPage() {
               <Boxes size={32} className="text-teal" />
             </div>
             <h1 className="text-4xl md:text-5xl font-mono text-sand mb-4">
-              Ecosistema <span className="text-teal">pyArchInit</span>
+              {t(locale, "progetti.title")}
             </h1>
             <p className="text-sand/60 text-lg max-w-2xl mx-auto">
-              Una suite di strumenti open source per la gestione, analisi e
-              documentazione dei dati archeologici.
+              {t(locale, "progetti.description")}
             </p>
           </ScrollReveal>
         </div>
@@ -110,22 +106,25 @@ export default async function ProgettiPage() {
             <ScrollReveal>
               <div className="text-center py-24 text-primary/30">
                 <Boxes size={56} className="mx-auto mb-6 opacity-20" />
-                <p className="text-xl font-mono">Nessun progetto disponibile.</p>
-                <p className="text-sm mt-2">Torna presto per scoprire i progetti dell&apos;ecosistema.</p>
+                <p className="text-xl font-mono">{t(locale, "progetti.empty")}</p>
+                <p className="text-sm mt-2">{t(locale, "progetti.empty.desc")}</p>
               </div>
             </ScrollReveal>
           ) : (
             <div className="space-y-16">
               {orderedCategories.map((cat) => {
                 const catProjects = grouped[cat] ?? [];
-                const catLabel = cat === "__uncategorized__" ? "Altri progetti" : cat;
+                const catLabel = cat === "__uncategorized__" ? t(locale, "progetti.other") : cat;
                 return (
                   <div key={cat}>
                     <ScrollReveal>
                       <h2 className="text-xl font-mono text-primary mb-8 pb-3 border-b border-primary/10">
                         {catLabel}
                         <span className="ml-3 text-sm font-sans text-primary/30 font-normal">
-                          {catProjects.length} {catProjects.length === 1 ? "progetto" : "progetti"}
+                          {catProjects.length}{" "}
+                          {catProjects.length === 1
+                            ? t(locale, "progetti.project")
+                            : t(locale, "progetti.projects")}
                         </span>
                       </h2>
                     </ScrollReveal>
@@ -156,7 +155,7 @@ export default async function ProgettiPage() {
                                     statusClass[project.status] ?? statusClass["archived"]
                                   }`}
                                 >
-                                  {statusLabel[project.status] ?? project.status}
+                                  {t(locale, `progetti.status.${project.status}`) || project.status}
                                 </span>
                               </div>
 
@@ -175,7 +174,7 @@ export default async function ProgettiPage() {
                                       className="flex items-center gap-1.5 text-sm text-teal hover:text-teal/80 transition font-medium"
                                     >
                                       <ExternalLink size={14} />
-                                      Sito web
+                                      {t(locale, "progetti.website")}
                                     </a>
                                   )}
                                   {project.githubUrl && (
@@ -211,7 +210,7 @@ export default async function ProgettiPage() {
             <div className="flex items-center gap-3 mb-8">
               <Handshake size={24} className="text-terracotta" />
               <h2 className="text-xl font-mono text-primary">
-                Collaborazioni e Progetti Europei
+                {t(locale, "progetti.collab.title")}
               </h2>
             </div>
           </ScrollReveal>
@@ -235,10 +234,7 @@ export default async function ProgettiPage() {
                       Horizon Europe &middot; ECCCH
                     </p>
                     <p className="text-primary/60 text-sm leading-relaxed">
-                      Progetto europeo Horizon Europe per lo sviluppo di standard e strumenti digitali
-                      per la documentazione stratigrafica archeologica. pyArchInit partecipa come
-                      partner tecnico per l&apos;integrazione GIS e la gestione dei dati di scavo
-                      all&apos;interno della European Collaborative Cloud for Cultural Heritage.
+                      {t(locale, "progetti.stratigraph.desc")}
                     </p>
                     <span className="inline-flex items-center gap-1 text-sm text-teal mt-3 group-hover:underline">
                       stratigraph-eccch.eu <ExternalLink size={12} />
@@ -256,10 +252,11 @@ export default async function ProgettiPage() {
       {/* CTA */}
       <section className="bg-primary py-20 px-4 text-center">
         <ScrollReveal>
-          <h2 className="text-3xl font-mono text-teal mb-4">Contribuisci</h2>
+          <h2 className="text-3xl font-mono text-teal mb-4">
+            {t(locale, "progetti.contribute")}
+          </h2>
           <p className="text-sand/50 mb-8 max-w-lg mx-auto">
-            pyArchInit è open source. Ogni contributo — codice, documentazione o
-            segnalazione di bug — è benvenuto.
+            {t(locale, "progetti.contribute.desc")}
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <a
@@ -275,7 +272,7 @@ export default async function ProgettiPage() {
               href="/contatti"
               className="border border-sand/30 text-sand font-mono px-6 py-3 rounded-full hover:border-teal hover:text-teal transition"
             >
-              Contattaci
+              {t(locale, "common.contact_us")}
             </Link>
           </div>
         </ScrollReveal>

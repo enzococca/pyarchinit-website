@@ -6,6 +6,7 @@ import { BookOpen, FlaskConical, ArrowRight, Database, Code2, Brain } from "luci
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth-utils";
 import { LearnSidebar } from "@/components/learn/learn-sidebar";
+import { getServerLocale, t } from "@/lib/i18n";
 
 interface Props {
   params: { slug: string };
@@ -15,12 +16,6 @@ const categoryIcon: Record<string, React.ReactNode> = {
   database: <Database size={16} />,
   python: <Code2 size={16} />,
   ai: <Brain size={16} />,
-};
-
-const difficultyLabel: Record<string, string> = {
-  beginner: "Principiante",
-  intermediate: "Intermedio",
-  advanced: "Avanzato",
 };
 
 const difficultyClass: Record<string, string> = {
@@ -41,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CourseDetailPage({ params }: Props) {
-  const session = await getSession();
+  const [session, locale] = await Promise.all([getSession(), getServerLocale()]);
   const userId = session?.user ? (session.user as any).id as string : null;
 
   const course = await prisma.interactiveCourse.findUnique({
@@ -87,7 +82,7 @@ export default async function CourseDetailPage({ params }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-xs font-mono text-sand/40 mb-3">
             <Link href="/impara" className="hover:text-teal transition-colors">
-              Impara
+              {t(locale, "impara.title")}
             </Link>
             <span>/</span>
             <span className="text-sand/60">{course.title}</span>
@@ -95,14 +90,14 @@ export default async function CourseDetailPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <span className="flex items-center gap-1.5 text-teal text-xs font-mono">
               {categoryIcon[course.category]}
-              {course.category}
+              {t(locale, `impara.category.${course.category}`) || course.category}
             </span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${
                 difficultyClass[course.difficulty] ?? "bg-sand/10 text-sand/50"
               }`}
             >
-              {difficultyLabel[course.difficulty] ?? course.difficulty}
+              {t(locale, `impara.difficulty.${course.difficulty}`) || course.difficulty}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-mono font-bold text-sand mb-2">
@@ -131,9 +126,11 @@ export default async function CourseDetailPage({ params }: Props) {
             {userId && (
               <div className="bg-code-bg border border-sand/10 rounded-card p-5 mb-8">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-sand/60 font-mono">Il tuo progresso</span>
+                  <span className="text-sm text-sand/60 font-mono">
+                    {t(locale, "impara.detail.your_progress")}
+                  </span>
                   <span className="text-teal font-mono text-sm font-bold">
-                    {completedCount}/{totalLessons} lezioni
+                    {completedCount}/{totalLessons} {t(locale, "impara.lessons")}
                   </span>
                 </div>
                 <div className="h-2 bg-sand/10 rounded-full overflow-hidden">
@@ -144,7 +141,7 @@ export default async function CourseDetailPage({ params }: Props) {
                 </div>
                 {progressPercent === 100 && (
                   <p className="text-teal text-xs font-mono mt-2">
-                    Corso completato!
+                    {t(locale, "impara.detail.completed")}
                   </p>
                 )}
               </div>
@@ -153,20 +150,24 @@ export default async function CourseDetailPage({ params }: Props) {
             {/* Welcome card */}
             <div className="bg-gradient-to-br from-teal/5 to-code-bg border border-teal/15 rounded-card p-8 mb-8">
               <h2 className="font-mono font-bold text-sand text-xl mb-3">
-                Benvenuto nel corso
+                {t(locale, "impara.detail.welcome")}
               </h2>
               <p className="text-sand/60 leading-relaxed mb-6">
                 {course.description}
               </p>
               <div className="flex flex-wrap gap-4 text-xs text-sand/40 font-mono mb-6">
-                <span>{course.modules.length} moduli</span>
-                <span>{totalLessons} lezioni totali</span>
+                <span>
+                  {course.modules.length} {t(locale, "impara.detail.modules_label")}
+                </span>
+                <span>
+                  {totalLessons} {t(locale, "impara.detail.lessons_label")}
+                </span>
                 <span>
                   {course.modules.reduce(
                     (acc, m) => acc + m.lessons.filter((l) => l.type === "lab").length,
                     0
                   )}{" "}
-                  laboratori pratici
+                  {t(locale, "impara.detail.labs_label")}
                 </span>
               </div>
               {firstLesson && (
@@ -174,7 +175,9 @@ export default async function CourseDetailPage({ params }: Props) {
                   href={`/impara/${course.slug}/${firstLesson.slug}`}
                   className="inline-flex items-center gap-2 bg-teal text-primary font-mono text-sm font-bold px-5 py-2.5 rounded-full hover:bg-teal/90 transition"
                 >
-                  {completedCount > 0 ? "Continua da dove eri rimasto" : "Inizia la prima lezione"}
+                  {completedCount > 0
+                    ? t(locale, "impara.detail.continue_lesson")
+                    : t(locale, "impara.detail.start_lesson")}
                   <ArrowRight size={14} />
                 </Link>
               )}
@@ -183,7 +186,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {/* Module overview */}
             <div className="space-y-4">
               <h3 className="font-mono text-sand/60 text-xs uppercase tracking-widest">
-                Struttura del corso
+                {t(locale, "impara.detail.course_structure")}
               </h3>
               {course.modules.map((mod, mi) => (
                 <div
@@ -198,7 +201,7 @@ export default async function CourseDetailPage({ params }: Props) {
                       {mod.title}
                     </h4>
                     <span className="ml-auto text-xs text-sand/30">
-                      {mod.lessons.length} lezioni
+                      {mod.lessons.length} {t(locale, "impara.lessons")}
                     </span>
                   </div>
                   <ul className="divide-y divide-sand/5">

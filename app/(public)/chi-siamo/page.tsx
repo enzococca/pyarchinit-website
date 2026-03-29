@@ -6,6 +6,7 @@ import { SectionDivider } from "@/components/public/section-divider";
 import { GitFork, GraduationCap, Code, Globe } from "lucide-react";
 import { prisma } from "@/lib/db";
 import type { Metadata } from "next";
+import { getServerLocale, t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Chi siamo - pyArchInit",
@@ -49,31 +50,31 @@ async function getSettings(): Promise<{ luca_bio: string; enzo_bio: string; desc
 }
 
 export default async function ChiSiamoPage() {
-  const settings = await getSettings();
+  const [settings, locale] = await Promise.all([getSettings(), getServerLocale()]);
 
   const founders = [
     {
       name: "Luca Mandolesi",
-      role: "Fondatore di pyArchInit / Direttore ICT",
+      role: t(locale, "chisiamo.luca.role"),
       photo: "/images/team_luca.jpg",
       bio: settings.luca_bio,
-      registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.5059",
+      registration: t(locale, "chisiamo.luca.reg"),
       highlights: [
-        { icon: Code, text: "Creatore di pyArchInit (2005)" },
-        { icon: GraduationCap, text: "Direttore Flyover Academy" },
-        { icon: Globe, text: "Esperto GIS, fotogrammetria e Blender" },
+        { icon: Code, text: t(locale, "chisiamo.luca.h1") },
+        { icon: GraduationCap, text: t(locale, "chisiamo.luca.h2") },
+        { icon: Globe, text: t(locale, "chisiamo.luca.h3") },
       ],
     },
     {
       name: "Enzo Cocca",
-      role: "Fondatore di pyArchInit / Sviluppo e Innovazione",
+      role: t(locale, "chisiamo.enzo.role"),
       photo: "/images/team_enzo.jpg",
       bio: settings.enzo_bio,
-      registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.4045",
+      registration: t(locale, "chisiamo.enzo.reg"),
       highlights: [
-        { icon: Code, text: "Lead Developer pyArchInit" },
-        { icon: Globe, text: "Ricerca in 4 continenti" },
-        { icon: GraduationCap, text: "PhD Scienze e Tecnologie per l'Archeologia" },
+        { icon: Code, text: t(locale, "chisiamo.enzo.h1") },
+        { icon: Globe, text: t(locale, "chisiamo.enzo.h2") },
+        { icon: GraduationCap, text: t(locale, "chisiamo.enzo.h3") },
       ],
     },
   ];
@@ -100,12 +101,10 @@ export default async function ChiSiamoPage() {
               className="mx-auto mb-6 drop-shadow-lg"
             />
             <h1 className="text-4xl md:text-5xl font-mono text-sand mb-4">
-              Chi <span className="text-teal">siamo</span>
+              {t(locale, "chisiamo.title")}
             </h1>
             <p className="text-sand/60 text-lg max-w-2xl mx-auto">
-              pyArchInit nasce nel 2005 dall&apos;idea di creare un plugin Python per QGIS
-              dedicato alla gestione dei dati archeologici. Oggi è la piattaforma open source
-              di riferimento per l&apos;archeologia digitale in Italia.
+              {t(locale, "chisiamo.subtitle")}
             </p>
           </ScrollReveal>
         </div>
@@ -117,10 +116,11 @@ export default async function ChiSiamoPage() {
       <section className="bg-sand py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal>
-            <h2 className="text-3xl font-mono text-primary mb-4 text-center">I Fondatori</h2>
+            <h2 className="text-3xl font-mono text-primary mb-4 text-center">
+              {t(locale, "chisiamo.founders")}
+            </h2>
             <p className="text-primary/50 text-center max-w-xl mx-auto mb-16">
-              Archeologi e sviluppatori, uniti dalla passione per l&apos;open source
-              e l&apos;innovazione nel campo dei beni culturali.
+              {t(locale, "chisiamo.founders.subtitle")}
             </p>
           </ScrollReveal>
 
@@ -209,7 +209,9 @@ export default async function ChiSiamoPage() {
       <section className="bg-sand py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <ScrollReveal>
-            <h2 className="text-3xl font-mono text-primary mb-12">Chi usa pyArchInit</h2>
+            <h2 className="text-3xl font-mono text-primary mb-12">
+              {t(locale, "chisiamo.who_uses")}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {partners.map((name) => (
                 <div
@@ -229,23 +231,24 @@ export default async function ChiSiamoPage() {
       {/* CTA */}
       <section className="bg-primary py-20 px-4 text-center">
         <ScrollReveal>
-          <h2 className="text-3xl font-mono text-teal mb-4">Unisciti a noi</h2>
+          <h2 className="text-3xl font-mono text-teal mb-4">
+            {t(locale, "chisiamo.join")}
+          </h2>
           <p className="text-sand/50 mb-8 max-w-lg mx-auto">
-            pyArchInit è open source. Contribuisci al codice, segui i corsi
-            o contattaci per una consulenza.
+            {t(locale, "chisiamo.join.desc")}
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/corsi"
               className="bg-teal text-primary font-mono font-bold px-6 py-3 rounded-full hover:bg-teal/90 transition"
             >
-              Esplora i Corsi
+              {t(locale, "chisiamo.explore_courses")}
             </Link>
             <Link
               href="/contatti"
               className="border border-sand/30 text-sand font-mono px-6 py-3 rounded-full hover:border-teal hover:text-teal transition"
             >
-              Contattaci
+              {t(locale, "chisiamo.contact_us")}
             </Link>
           </div>
         </ScrollReveal>

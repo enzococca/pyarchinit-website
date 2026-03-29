@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { Send, CheckCircle2 } from "lucide-react";
-
-const contactTypes = [
-  { value: "Informazioni", label: "Informazioni generali" },
-  { value: "Corsi", label: "Corsi" },
-  { value: "Consulenza", label: "Consulenza" },
-  { value: "Supporto tecnico", label: "Supporto tecnico" },
-  { value: "Altro", label: "Altro" },
-];
+import { useLocale } from "@/components/public/locale-provider";
 
 export default function ContattiPage() {
+  const { t } = useLocale();
+
+  const contactTypes = [
+    { value: "Informazioni", label: t("contatti.type.info") },
+    { value: "Corsi", label: t("contatti.type.corsi") },
+    { value: "Consulenza", label: t("contatti.type.consulenza") },
+    { value: "Supporto tecnico", label: t("contatti.type.supporto") },
+    { value: "Altro", label: t("contatti.type.altro") },
+  ];
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -38,10 +41,10 @@ export default function ContattiPage() {
         setSuccess(true);
         setForm({ name: "", email: "", type: "Informazioni", message: "" });
       } else {
-        setError("Si è verificato un errore. Riprova più tardi.");
+        setError(t("contatti.error"));
       }
     } catch {
-      setError("Si è verificato un errore. Riprova più tardi.");
+      setError(t("contatti.error"));
     } finally {
       setSending(false);
     }
@@ -55,16 +58,16 @@ export default function ContattiPage() {
             <CheckCircle2 size={32} className="text-teal" />
           </div>
           <h2 className="text-2xl font-mono font-bold text-sand mb-3">
-            Messaggio inviato!
+            {t("contatti.success")}
           </h2>
           <p className="text-sand/60 mb-8">
-            Grazie per averci contattato. Ti risponderemo al più presto.
+            {t("contatti.success.desc")}
           </p>
           <button
             onClick={() => setSuccess(false)}
             className="text-sm text-teal hover:text-teal/80 transition-colors"
           >
-            Invia un altro messaggio
+            {t("contatti.success.another")}
           </button>
         </div>
       </main>
@@ -74,16 +77,18 @@ export default function ContattiPage() {
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="mb-12">
-        <h1 className="text-4xl font-mono font-bold text-sand mb-3">Contatti</h1>
+        <h1 className="text-4xl font-mono font-bold text-sand mb-3">
+          {t("contatti.title")}
+        </h1>
         <p className="text-sand/50 text-lg">
-          Hai domande su pyArchInit? Compila il modulo e ti risponderemo al più presto.
+          {t("contatti.subtitle")}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="block text-sm text-sand/70 mb-1.5" htmlFor="name">
-            Nome e cognome <span className="text-teal">*</span>
+            {t("contatti.nome")} <span className="text-teal">*</span>
           </label>
           <input
             id="name"
@@ -92,13 +97,13 @@ export default function ContattiPage() {
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className="w-full bg-code-bg border border-sand/10 rounded-card px-4 py-3 text-sand placeholder-sand/30 focus:outline-none focus:border-teal/50 transition-colors"
-            placeholder="Mario Rossi"
+            placeholder={t("contatti.placeholder.nome")}
           />
         </div>
 
         <div>
           <label className="block text-sm text-sand/70 mb-1.5" htmlFor="email">
-            Email <span className="text-teal">*</span>
+            {t("contatti.email")} <span className="text-teal">*</span>
           </label>
           <input
             id="email"
@@ -107,13 +112,13 @@ export default function ContattiPage() {
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full bg-code-bg border border-sand/10 rounded-card px-4 py-3 text-sand placeholder-sand/30 focus:outline-none focus:border-teal/50 transition-colors"
-            placeholder="mario@esempio.it"
+            placeholder={t("contatti.placeholder.email")}
           />
         </div>
 
         <div>
           <label className="block text-sm text-sand/70 mb-1.5" htmlFor="type">
-            Tipo di richiesta <span className="text-teal">*</span>
+            {t("contatti.tipo")} <span className="text-teal">*</span>
           </label>
           <select
             id="type"
@@ -122,9 +127,9 @@ export default function ContattiPage() {
             onChange={(e) => setForm({ ...form, type: e.target.value })}
             className="w-full bg-code-bg border border-sand/10 rounded-card px-4 py-3 text-sand focus:outline-none focus:border-teal/50 transition-colors"
           >
-            {contactTypes.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            {contactTypes.map((ct) => (
+              <option key={ct.value} value={ct.value}>
+                {ct.label}
               </option>
             ))}
           </select>
@@ -132,7 +137,7 @@ export default function ContattiPage() {
 
         <div>
           <label className="block text-sm text-sand/70 mb-1.5" htmlFor="message">
-            Messaggio <span className="text-teal">*</span>
+            {t("contatti.messaggio")} <span className="text-teal">*</span>
           </label>
           <textarea
             id="message"
@@ -141,7 +146,7 @@ export default function ContattiPage() {
             value={form.message}
             onChange={(e) => setForm({ ...form, message: e.target.value })}
             className="w-full bg-code-bg border border-sand/10 rounded-card px-4 py-3 text-sand placeholder-sand/30 focus:outline-none focus:border-teal/50 transition-colors resize-none"
-            placeholder="Descrivi la tua richiesta..."
+            placeholder={t("contatti.placeholder.messaggio")}
           />
         </div>
 
@@ -155,7 +160,7 @@ export default function ContattiPage() {
           className="w-full flex items-center justify-center gap-2 bg-teal text-primary font-medium py-3 rounded-card hover:bg-teal/90 transition-colors disabled:opacity-50"
         >
           <Send size={16} />
-          {sending ? "Invio in corso..." : "Invia messaggio"}
+          {sending ? t("contatti.sending") : t("contatti.invia")}
         </button>
       </form>
     </main>

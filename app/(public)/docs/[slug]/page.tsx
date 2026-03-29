@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { DocsSidebar, DocsSidebarMobile } from "@/components/public/docs-sidebar";
 import { DocsToc } from "@/components/public/docs-toc";
+import { getServerLocale, t } from "@/lib/i18n";
 
 interface TocItem {
   id: string;
@@ -71,10 +72,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function DocPageDetail({ params }: Props) {
-  const page = await prisma.docPage.findUnique({
-    where: { slug: params.slug },
-    include: { section: true },
-  });
+  const [page, locale] = await Promise.all([
+    prisma.docPage.findUnique({
+      where: { slug: params.slug },
+      include: { section: true },
+    }),
+    getServerLocale(),
+  ]);
 
   if (!page) notFound();
 
@@ -142,12 +146,15 @@ export default async function DocPageDetail({ params }: Props) {
             {/* Updated + GitHub */}
             <div className="mt-12 pt-6 border-t border-sand/10 flex items-center justify-between text-xs text-sand/30">
               <span>
-                Aggiornato il{" "}
-                {new Date(page.updatedAt).toLocaleDateString("it-IT", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
+                {t(locale, "docs.updated")}{" "}
+                {new Date(page.updatedAt).toLocaleDateString(
+                  locale === "en" ? "en-GB" : "it-IT",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
               </span>
               <a
                 href="https://github.com/pyarchinit"
@@ -155,7 +162,7 @@ export default async function DocPageDetail({ params }: Props) {
                 rel="noopener noreferrer"
                 className="hover:text-sand transition-colors"
               >
-                Modifica su GitHub
+                {t(locale, "docs.edit_github")}
               </a>
             </div>
 
@@ -172,7 +179,7 @@ export default async function DocPageDetail({ params }: Props) {
                       className="text-sand/40 group-hover:text-teal transition-colors shrink-0"
                     />
                     <div className="min-w-0">
-                      <p className="text-xs text-sand/30 mb-0.5">Precedente</p>
+                      <p className="text-xs text-sand/30 mb-0.5">{t(locale, "docs.prev")}</p>
                       <p className="text-sm text-sand/70 group-hover:text-sand transition-colors truncate">
                         {prevPage.title}
                       </p>
@@ -188,7 +195,7 @@ export default async function DocPageDetail({ params }: Props) {
                     className="flex items-center justify-end gap-3 bg-code-bg border border-sand/10 hover:border-teal/30 rounded-card px-4 py-3 transition-colors group sm:col-start-2"
                   >
                     <div className="min-w-0 text-right">
-                      <p className="text-xs text-sand/30 mb-0.5">Successivo</p>
+                      <p className="text-xs text-sand/30 mb-0.5">{t(locale, "docs.next")}</p>
                       <p className="text-sm text-sand/70 group-hover:text-sand transition-colors truncate">
                         {nextPage.title}
                       </p>

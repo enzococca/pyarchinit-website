@@ -5,6 +5,7 @@ import Image from "next/image";
 import { BookOpen, FileText, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { DocsSidebar, DocsSidebarMobile } from "@/components/public/docs-sidebar";
+import { getServerLocale, t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Documentazione | pyArchInit",
@@ -13,15 +14,18 @@ export const metadata: Metadata = {
 };
 
 export default async function DocsPage() {
-  const sections = await prisma.docSection.findMany({
-    orderBy: { order: "asc" },
-    include: {
-      pages: {
-        orderBy: { order: "asc" },
-        select: { id: true, title: true, slug: true },
+  const [sections, locale] = await Promise.all([
+    prisma.docSection.findMany({
+      orderBy: { order: "asc" },
+      include: {
+        pages: {
+          orderBy: { order: "asc" },
+          select: { id: true, title: true, slug: true },
+        },
       },
-    },
-  });
+    }),
+    getServerLocale(),
+  ]);
 
   const totalPages = sections.reduce((sum, s) => sum + s.pages.length, 0);
   const firstPage = sections[0]?.pages[0];
@@ -49,21 +53,23 @@ export default async function DocsPage() {
               className="drop-shadow-lg"
             />
             <p className="text-teal font-mono text-xs tracking-widest uppercase">
-              Documentazione
+              {t(locale, "docs.header.label")}
             </p>
           </div>
           <h1 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-3">
-            Guide &amp; Tutorial
+            {t(locale, "docs.guides")}
           </h1>
           <p className="text-sand/60 text-base max-w-xl mb-6">
-            {totalPages} guide passo-passo per imparare ad usare pyArchInit: dalla configurazione iniziale alla gestione avanzata dei dati di scavo.
+            {t(locale, "docs.guides.desc.prefix")}
+            {totalPages}
+            {t(locale, "docs.guides.desc.suffix")}
           </p>
           {firstPage && (
             <Link
               href={`/docs/${firstPage.slug}`}
               className="inline-flex items-center gap-2 bg-teal text-primary font-mono text-sm font-bold px-5 py-2.5 rounded-full hover:bg-teal/90 transition"
             >
-              Inizia dal tutorial 1 <ArrowRight size={14} />
+              {t(locale, "docs.start_tutorial")} <ArrowRight size={14} />
             </Link>
           )}
         </div>
@@ -73,7 +79,7 @@ export default async function DocsPage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center text-sand/30">
             <BookOpen size={48} className="mx-auto mb-4 opacity-40" />
-            <p className="text-lg">La documentazione e in fase di sviluppo.</p>
+            <p className="text-lg">{t(locale, "docs.empty")}</p>
           </div>
         </section>
       ) : (
@@ -136,7 +142,7 @@ export default async function DocsPage() {
               {/* Quick start CTA */}
               <div className="mt-12 bg-gradient-to-r from-teal/5 to-terracotta/5 border border-sand/8 rounded-card p-6 text-center">
                 <p className="text-sand/60 text-sm mb-3">
-                  Non sai da dove iniziare?
+                  {t(locale, "docs.no_start")}
                 </p>
                 {firstPage && (
                   <Link
@@ -144,7 +150,7 @@ export default async function DocsPage() {
                     className="inline-flex items-center gap-2 text-teal font-mono text-sm hover:underline"
                   >
                     <FileText size={14} />
-                    Parti dalla Guida alla Configurazione
+                    {t(locale, "docs.start_link")}
                   </Link>
                 )}
               </div>

@@ -6,16 +6,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { BookOpen, Clock, Video, FileText, HelpCircle, Code2, ExternalLink, type LucideIcon } from "lucide-react";
 import { CourseEnrollButton } from "./enroll-button";
+import { getServerLocale, t } from "@/lib/i18n";
 
 interface PageProps {
   params: { slug: string };
 }
-
-const levelLabel: Record<string, string> = {
-  BASE: "Base",
-  INTERMEDIO: "Intermedio",
-  AVANZATO: "Avanzato",
-};
 
 const levelClass: Record<string, string> = {
   BASE: "bg-teal/10 text-teal",
@@ -28,13 +23,6 @@ const lessonTypeIcon: Record<string, LucideIcon> = {
   TEXT: FileText,
   QUIZ: HelpCircle,
   EXERCISE: Code2,
-};
-
-const lessonTypeLabel: Record<string, string> = {
-  VIDEO: "Video",
-  TEXT: "Testo",
-  QUIZ: "Quiz",
-  EXERCISE: "Esercizio",
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -50,17 +38,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CourseDetailPage({ params }: PageProps) {
-  const course = await prisma.course.findUnique({
-    where: { slug: params.slug, status: "PUBLISHED" },
-    include: {
-      modules: {
-        orderBy: { order: "asc" },
-        include: {
-          lessons: { orderBy: { order: "asc" } },
+  const [course, locale] = await Promise.all([
+    prisma.course.findUnique({
+      where: { slug: params.slug, status: "PUBLISHED" },
+      include: {
+        modules: {
+          orderBy: { order: "asc" },
+          include: {
+            lessons: { orderBy: { order: "asc" } },
+          },
         },
       },
-    },
-  });
+    }),
+    getServerLocale(),
+  ]);
 
   if (!course) notFound();
 
@@ -104,7 +95,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${levelClass[course.level] ?? "bg-sand/10 text-sand/50"}`}
             >
-              {levelLabel[course.level] ?? course.level}
+              {t(locale, `corsi.level.${course.level}`) || course.level}
             </span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-sand/5 text-sand/40 border border-sand/10">
               {course.category}
@@ -124,7 +115,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
           <div className="flex flex-wrap items-center gap-6 text-sm text-sand/50 mb-8">
             <span className="flex items-center gap-1.5">
               <BookOpen size={14} />
-              {lessonCount} lezioni
+              {lessonCount} {t(locale, "corsi.detail.lessons_label")}
             </span>
             {totalMinutes > 0 && (
               <span className="flex items-center gap-1.5">
@@ -139,7 +130,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
           {course.description && (
             <div className="mb-10">
               <h2 className="text-lg font-mono font-semibold text-sand mb-3">
-                Descrizione
+                {t(locale, "corsi.detail.description")}
               </h2>
               <p className="text-sand/70 leading-relaxed whitespace-pre-wrap">
                 {course.description}
@@ -151,7 +142,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
           {course.modules.length > 0 && (
             <div>
               <h2 className="text-lg font-mono font-semibold text-sand mb-4">
-                Programma
+                {t(locale, "corsi.detail.curriculum")}
               </h2>
               <div className="space-y-3">
                 {course.modules.map((mod, mi) => (
@@ -165,10 +156,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
                         <span className="text-sand/30 font-mono text-xs mr-2">
                           {String(mi + 1).padStart(2, "0")}
                         </span>
-                        {mod.title || "Modulo senza titolo"}
+                        {mod.title || t(locale, "corsi.detail.module_notitle")}
                       </span>
                       <span className="text-xs text-sand/30">
-                        {mod.lessons.length} lezioni
+                        {mod.lessons.length} {t(locale, "corsi.detail.lessons_label")}
                       </span>
                     </summary>
                     <ul className="border-t border-sand/10 divide-y divide-sand/5">
@@ -184,10 +175,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
                             </span>
                             <Icon size={13} className="text-sand/30 shrink-0" />
                             <span className="text-sand/70 flex-1">
-                              {lesson.title || "Lezione senza titolo"}
+                              {lesson.title || t(locale, "corsi.detail.lesson_notitle")}
                             </span>
                             <span className="text-xs text-sand/30">
-                              {lessonTypeLabel[lesson.type]}
+                              {t(locale, `corsi.lesson.type.${lesson.type}`) || lesson.type}
                             </span>
                             {lesson.duration && lesson.duration > 0 && (
                               <span className="text-xs text-sand/30">
@@ -221,7 +212,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
             )}
             <div className="text-3xl font-mono font-bold text-sand mb-6">
               {course.price === 0
-                ? "Gratuito"
+                ? t(locale, "corsi.free")
                 : `€${course.price.toFixed(2)}`}
             </div>
             {course.slug.startsWith("flyover-") ? (
@@ -232,7 +223,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-card bg-ochre text-primary font-medium hover:bg-ochre/90 transition-colors text-sm"
               >
                 <ExternalLink size={15} />
-                Vai al corso su Flyover
+                {t(locale, "corsi.detail.flyover_go")}
               </a>
             ) : (
               <CourseEnrollButton courseId={course.id} price={course.price} />
@@ -240,7 +231,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
             <ul className="mt-6 space-y-2 text-sm text-sand/50">
               <li className="flex items-center gap-2">
                 <BookOpen size={14} />
-                {lessonCount} lezioni
+                {lessonCount} {t(locale, "corsi.detail.lessons_label")}
               </li>
               {totalMinutes > 0 && (
                 <li className="flex items-center gap-2">
@@ -253,7 +244,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                 <span
                   className={`text-xs px-1.5 py-0.5 rounded-full ${levelClass[course.level] ?? ""}`}
                 >
-                  {levelLabel[course.level] ?? course.level}
+                  {t(locale, `corsi.level.${course.level}`) || course.level}
                 </span>
               </li>
             </ul>

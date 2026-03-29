@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { PlayCircle, ExternalLink } from "lucide-react";
+import { getServerLocale, t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Video Tutorial | pyArchInit",
@@ -28,7 +29,9 @@ const videos = [
 
 const categories = Array.from(new Set(videos.map(v => v.category)));
 
-export default function VideoPage() {
+export default async function VideoPage() {
+  const locale = await getServerLocale();
+
   return (
     <main>
       {/* Header */}
@@ -42,15 +45,16 @@ export default function VideoPage() {
               height={40}
             />
             <p className="text-teal font-mono text-xs tracking-widest uppercase">
-              Video Tutorial
+              {t(locale, "video.header.label")}
             </p>
           </div>
           <h1 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-3">
-            Impara con i video
+            {t(locale, "video.learn")}
           </h1>
           <p className="text-sand/60 text-base max-w-xl mb-4">
-            {videos.length} video tutorial dal canale YouTube ufficiale di pyArchInit.
-            Guarda come funziona il plugin in azione.
+            {t(locale, "video.desc.prefix")}
+            {videos.length}
+            {t(locale, "video.desc.suffix")}
           </p>
           <a
             href="https://www.youtube.com/@pyarchinit"
@@ -59,7 +63,7 @@ export default function VideoPage() {
             className="inline-flex items-center gap-2 text-teal text-sm font-mono hover:underline"
           >
             <PlayCircle size={16} />
-            Canale YouTube @pyarchinit
+            {t(locale, "video.channel")}
             <ExternalLink size={12} />
           </a>
         </div>
@@ -70,7 +74,7 @@ export default function VideoPage() {
           <div key={cat} className="mb-12">
             <h2 className="text-sm font-mono text-teal uppercase tracking-widest mb-6 flex items-center gap-2">
               <PlayCircle size={14} />
-              {cat}
+              {t(locale, `video.cat.${cat}`) || cat}
               <span className="text-sand/20 font-normal">
                 ({videos.filter(v => v.category === cat).length})
               </span>

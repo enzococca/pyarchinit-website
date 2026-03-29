@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { BlockRenderer } from "@/components/public/block-renderer";
 import type { Block } from "@/lib/blocks";
+import { getServerLocale, t } from "@/lib/i18n";
 
 interface Props {
   params: { slug: string };
@@ -25,9 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Props) {
-  const post = await prisma.blogPost.findUnique({
-    where: { slug: params.slug, status: "PUBLISHED" },
-  });
+  const [post, locale] = await Promise.all([
+    prisma.blogPost.findUnique({
+      where: { slug: params.slug, status: "PUBLISHED" },
+    }),
+    getServerLocale(),
+  ]);
 
   if (!post) notFound();
 
@@ -40,7 +44,7 @@ export default async function BlogPostPage({ params }: Props) {
         className="inline-flex items-center gap-2 text-sm text-sand/50 hover:text-sand transition-colors mb-8"
       >
         <ArrowLeft size={16} />
-        Torna al blog
+        {t(locale, "blog.back")}
       </Link>
 
       {post.coverImage && (
@@ -65,11 +69,14 @@ export default async function BlogPostPage({ params }: Props) {
         )}
         {post.publishedAt && (
           <time className="text-sm text-sand/30">
-            {new Date(post.publishedAt).toLocaleDateString("it-IT", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            {new Date(post.publishedAt).toLocaleDateString(
+              locale === "en" ? "en-GB" : "it-IT",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }
+            )}
           </time>
         )}
       </header>

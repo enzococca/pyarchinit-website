@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useLocale } from "@/components/public/locale-provider";
 
 /* ═══════════════════════════════════════════
    REAL pyArchInit CODE SNIPPETS
@@ -87,19 +88,19 @@ const codeSnippets = [
 ];
 
 /* ═══════════════════════════════════════════
-   THOUGHT BUBBLES - Real dev thoughts
+   THOUGHT BUBBLES - Real dev thoughts (keys resolved at runtime)
    ═══════════════════════════════════════════ */
-const allThoughts = [
-  { text: "Matrice di Harris → grafo diretto...", icon: "🔗" },
-  { text: "GIS layer per fase cronologica", icon: "🗺️" },
-  { text: "Servono le relazioni tra US", icon: "📐" },
-  { text: "Connessione PostgreSQL → ORM", icon: "🗄️" },
-  { text: "Plugin QGIS: tabs → modules → db", icon: "🧩" },
-  { text: "Fotogrammetria → CloudCompare", icon: "📷" },
-  { text: "Export PDF per le schede US", icon: "📄" },
-  { text: "Template GNA per la consegna", icon: "📋" },
-  { text: "Periodizzazione automatica?", icon: "⏳" },
-  { text: "WebODM per le ortofoto drone", icon: "🛸" },
+const thoughtKeys = [
+  { key: "thought.harris", icon: "🔗" },
+  { key: "thought.gis_layer", icon: "🗺️" },
+  { key: "thought.us_relations", icon: "📐" },
+  { key: "thought.postgres", icon: "🗄️" },
+  { key: "thought.plugin", icon: "🧩" },
+  { key: "thought.photogrammetry", icon: "📷" },
+  { key: "thought.pdf_export", icon: "📄" },
+  { key: "thought.gna", icon: "📋" },
+  { key: "thought.period", icon: "⏳" },
+  { key: "thought.webodm", icon: "🛸" },
 ];
 
 /* ═══════════════════════════════════════════
@@ -290,6 +291,7 @@ interface BubbleState {
 
 export default function LandingPage() {
   const router = useRouter();
+  const { t } = useLocale();
   const [transitioning, setTransitioning] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [charIndex, setCharIndex] = useState(0);
@@ -303,6 +305,13 @@ export default function LandingPage() {
     visible: false,
   });
   const bubbleIdxRef = useRef(0);
+
+  // Build translated thoughts from keys
+  const allThoughts = useMemo(
+    () => thoughtKeys.map((item) => ({ text: t(item.key), icon: item.icon })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t]
+  );
 
   const currentSnippet = codeSnippets[snippetIdx];
   const totalChars = useMemo(
@@ -464,7 +473,7 @@ export default function LandingPage() {
             className="group flex flex-col items-center gap-1.5 mx-auto"
           >
             <span className="text-[#546e7a] text-[10px] font-mono tracking-[0.25em] uppercase group-hover:text-[#00D4AA] transition-colors duration-300">
-              Entra nella piattaforma
+              {t("landing.enter")}
             </span>
             <svg
               width="18"

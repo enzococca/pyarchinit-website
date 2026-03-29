@@ -5,6 +5,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { syncFlyoverCourses } from "@/lib/flyover-sync";
 import { BookOpen } from "lucide-react";
+import { getServerLocale, t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Corsi | pyArchInit",
@@ -25,12 +26,6 @@ async function maybeSyncCourses() {
   }
 }
 
-const levelLabel: Record<string, string> = {
-  BASE: "Base",
-  INTERMEDIO: "Intermedio",
-  AVANZATO: "Avanzato",
-};
-
 const levelClass: Record<string, string> = {
   BASE: "bg-teal/10 text-teal",
   INTERMEDIO: "bg-ochre/10 text-ochre",
@@ -45,6 +40,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
   // Trigger Flyover sync throttled to once per hour
   await maybeSyncCourses();
 
+  const locale = await getServerLocale();
   const activeCategory = searchParams.cat ?? "Tutti";
 
   const courses = await prisma.course.findMany({
@@ -62,12 +58,18 @@ export default async function CorsiPage({ searchParams }: PageProps) {
     },
   });
 
+  // The "Tutti" filter label needs translation; other categories stay as-is
+  const filterLabel = (cat: string) =>
+    cat === "Tutti" ? t(locale, "corsi.filter.all") : cat;
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="mb-10">
-        <h1 className="text-4xl font-mono font-bold text-sand mb-3">Corsi</h1>
+        <h1 className="text-4xl font-mono font-bold text-sand mb-3">
+          {t(locale, "corsi.title")}
+        </h1>
         <p className="text-sand/50 text-lg">
-          Formazione pratica su Python, GIS, QGIS e archeologia digitale.
+          {t(locale, "corsi.subtitle")}
         </p>
       </div>
 
@@ -83,7 +85,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                 : "bg-code-bg text-sand/60 hover:text-sand border border-sand/10 hover:border-sand/20"
             }`}
           >
-            {cat}
+            {filterLabel(cat)}
           </Link>
         ))}
       </div>
@@ -91,7 +93,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
       {courses.length === 0 ? (
         <div className="text-center py-24 text-sand/30">
           <BookOpen size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg">Nessun corso disponibile in questa categoria.</p>
+          <p className="text-lg">{t(locale, "corsi.empty")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -133,7 +135,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full ${levelClass[course.level] ?? "bg-sand/10 text-sand/50"}`}
                     >
-                      {levelLabel[course.level] ?? course.level}
+                      {t(locale, `corsi.level.${course.level}`) || course.level}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-sand/5 text-sand/40">
                       {course.category}
@@ -148,7 +150,9 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                     </Link>
                   </h2>
                   <div className="flex items-center gap-4 mt-4 pt-4 border-t border-sand/10 text-xs text-sand/40">
-                    <span>{lessonCount} lezioni</span>
+                    <span>
+                      {lessonCount} {t(locale, "corsi.lessons")}
+                    </span>
                     {totalMinutes > 0 && (
                       <span>
                         {hours > 0 ? `${hours}h ` : ""}
@@ -157,7 +161,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
                     )}
                     <span className="ml-auto font-mono text-sand text-sm font-semibold">
                       {course.price === 0
-                        ? "Gratuito"
+                        ? t(locale, "corsi.free")
                         : `€${course.price.toFixed(2)}`}
                     </span>
                   </div>
@@ -170,9 +174,11 @@ export default async function CorsiPage({ searchParams }: PageProps) {
 
       {/* Flyover Academy banner */}
       <div className="mt-12 bg-code-bg rounded-card p-8 text-center">
-        <h3 className="text-lg font-mono text-sand mb-2">Cerchi altri corsi?</h3>
+        <h3 className="text-lg font-mono text-sand mb-2">
+          {t(locale, "corsi.flyover.title")}
+        </h3>
         <p className="text-sand/50 text-sm mb-4">
-          Flyover Academy offre corsi su droni, fotogrammetria, restauro, realtà virtuale e molto altro.
+          {t(locale, "corsi.flyover.desc")}
         </p>
         <a
           href="https://flyover.adarteinfo.it/corsi-flyover-academy/"
@@ -180,7 +186,7 @@ export default async function CorsiPage({ searchParams }: PageProps) {
           rel="noopener noreferrer"
           className="inline-block bg-terracotta text-white font-mono text-sm font-bold px-6 py-2.5 rounded-full hover:bg-terracotta/90 transition"
         >
-          Scopri Flyover Academy →
+          {t(locale, "corsi.flyover.cta")}
         </a>
       </div>
     </main>
