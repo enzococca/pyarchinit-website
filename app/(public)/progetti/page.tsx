@@ -27,6 +27,15 @@ const statusClass: Record<string, string> = {
   archived: "bg-sand/10 text-sand/50 border border-sand/10",
 };
 
+// Canonical category order and labels
+const CATEGORY_ORDER = [
+  "Plugin QGIS",
+  "Web App",
+  "Pacchetti Python",
+  "App Mobile",
+  "Strumenti",
+];
+
 interface ProjectRecord {
   id: string;
   title: string;
@@ -35,12 +44,40 @@ interface ProjectRecord {
   githubUrl: string | null;
   imageUrl: string | null;
   status: string;
+  category: string | null;
 }
 
 export default async function ProgettiPage() {
   const projects: ProjectRecord[] = await db.project.findMany({
     orderBy: { order: "asc" },
   });
+
+  // Group projects by category
+  const grouped: Record<string, ProjectRecord[]> = {};
+  const uncategorized: ProjectRecord[] = [];
+
+  for (const project of projects) {
+    const cat = project.category?.trim() || "";
+    if (!cat) {
+      uncategorized.push(project);
+    } else {
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(project);
+    }
+  }
+
+  // Build ordered list of categories to display
+  const orderedCategories = [
+    ...CATEGORY_ORDER.filter((c) => grouped[c]?.length),
+    ...Object.keys(grouped).filter((c) => !CATEGORY_ORDER.includes(c)),
+  ];
+
+  if (uncategorized.length > 0) {
+    orderedCategories.push("__uncategorized__");
+    grouped["__uncategorized__"] = uncategorized;
+  }
+
+  const hasProjects = projects.length > 0;
 
   return (
     <>
@@ -65,10 +102,10 @@ export default async function ProgettiPage() {
 
       <SectionDivider variant="dark-to-light" />
 
-      {/* Projects grid */}
+      {/* Projects grouped by category */}
       <section className="bg-sand py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          {projects.length === 0 ? (
+          {!hasProjects ? (
             <ScrollReveal>
               <div className="text-center py-24 text-primary/30">
                 <Boxes size={56} className="mx-auto mb-6 opacity-20" />
@@ -77,72 +114,90 @@ export default async function ProgettiPage() {
               </div>
             </ScrollReveal>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <ScrollReveal key={project.id}>
-                  <div className="bg-white rounded-card shadow-sm border border-primary/5 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
-                    {/* Image */}
-                    {project.imageUrl && (
-                      <div className="h-48 overflow-hidden bg-primary/5">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={project.imageUrl}
-                          alt={project.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-
-                    {/* Content */}
-                    <div className="p-6 flex flex-col flex-1">
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <h2 className="text-lg font-mono text-primary font-semibold leading-tight">
-                          {project.title}
-                        </h2>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full shrink-0 font-medium ${
-                            statusClass[project.status] ?? statusClass["archived"]
-                          }`}
-                        >
-                          {statusLabel[project.status] ?? project.status}
+            <div className="space-y-16">
+              {orderedCategories.map((cat) => {
+                const catProjects = grouped[cat] ?? [];
+                const catLabel = cat === "__uncategorized__" ? "Altri progetti" : cat;
+                return (
+                  <div key={cat}>
+                    <ScrollReveal>
+                      <h2 className="text-xl font-mono text-primary mb-8 pb-3 border-b border-primary/10">
+                        {catLabel}
+                        <span className="ml-3 text-sm font-sans text-primary/30 font-normal">
+                          {catProjects.length} {catProjects.length === 1 ? "progetto" : "progetti"}
                         </span>
-                      </div>
+                      </h2>
+                    </ScrollReveal>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {catProjects.map((project) => (
+                        <ScrollReveal key={project.id}>
+                          <div className="bg-white rounded-card shadow-sm border border-primary/5 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
+                            {/* Image */}
+                            {project.imageUrl && (
+                              <div className="h-48 overflow-hidden bg-primary/5">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={project.imageUrl}
+                                  alt={project.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
 
-                      <p className="text-primary/60 text-sm leading-relaxed flex-1 mb-4">
-                        {project.description}
-                      </p>
+                            {/* Content */}
+                            <div className="p-6 flex flex-col flex-1">
+                              <div className="flex items-start justify-between gap-3 mb-3">
+                                <h3 className="text-lg font-mono text-primary font-semibold leading-tight">
+                                  {project.title}
+                                </h3>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full shrink-0 font-medium ${
+                                    statusClass[project.status] ?? statusClass["archived"]
+                                  }`}
+                                >
+                                  {statusLabel[project.status] ?? project.status}
+                                </span>
+                              </div>
 
-                      {/* Links */}
-                      {(project.url || project.githubUrl) && (
-                        <div className="flex items-center gap-3 pt-4 border-t border-primary/5">
-                          {project.url && (
-                            <a
-                              href={project.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-sm text-teal hover:text-teal/80 transition font-medium"
-                            >
-                              <ExternalLink size={14} />
-                              Sito web
-                            </a>
-                          )}
-                          {project.githubUrl && (
-                            <a
-                              href={project.githubUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-sm text-primary/50 hover:text-primary transition"
-                            >
-                              <GitFork size={14} />
-                              GitHub
-                            </a>
-                          )}
-                        </div>
-                      )}
+                              <p className="text-primary/60 text-sm leading-relaxed flex-1 mb-4">
+                                {project.description}
+                              </p>
+
+                              {/* Links */}
+                              {(project.url || project.githubUrl) && (
+                                <div className="flex items-center gap-3 pt-4 border-t border-primary/5">
+                                  {project.url && (
+                                    <a
+                                      href={project.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1.5 text-sm text-teal hover:text-teal/80 transition font-medium"
+                                    >
+                                      <ExternalLink size={14} />
+                                      Sito web
+                                    </a>
+                                  )}
+                                  {project.githubUrl && (
+                                    <a
+                                      href={project.githubUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1.5 text-sm text-primary/50 hover:text-primary transition"
+                                    >
+                                      <GitFork size={14} />
+                                      GitHub
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </ScrollReveal>
+                      ))}
                     </div>
                   </div>
-                </ScrollReveal>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

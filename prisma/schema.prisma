@@ -364,6 +364,7 @@ model Project {
   githubUrl   String?
   imageUrl    String?
   status      String   @default("active")
+  category    String?
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -24,6 +24,7 @@ export async function PUT(
       githubUrl: data.githubUrl ?? null,
       imageUrl: data.imageUrl ?? null,
       status: data.status,
+      category: data.category ?? null,
       order: data.order,
     },
   });

@@ -14,6 +14,7 @@ interface Project {
   githubUrl: string | null;
   imageUrl: string | null;
   status: string;
+  category: string | null;
   order: number;
   createdAt: string;
 }
@@ -22,6 +23,15 @@ const STATUS_OPTIONS = [
   { value: "active", label: "Attivo" },
   { value: "in-development", label: "In sviluppo" },
   { value: "archived", label: "Archiviato" },
+];
+
+const CATEGORY_OPTIONS = [
+  { value: "", label: "— Nessuna categoria —" },
+  { value: "Plugin QGIS", label: "Plugin QGIS" },
+  { value: "Web App", label: "Web App" },
+  { value: "Pacchetti Python", label: "Pacchetti Python" },
+  { value: "App Mobile", label: "App Mobile" },
+  { value: "Strumenti", label: "Strumenti" },
 ];
 
 const statusClass: Record<string, string> = {
@@ -47,6 +57,7 @@ const emptyForm = (): EditingProject => ({
   githubUrl: "",
   imageUrl: "",
   status: "active",
+  category: "",
   order: 0,
 });
 
@@ -79,6 +90,7 @@ export default function AdminProgettiPage() {
       githubUrl: project.githubUrl ?? "",
       imageUrl: project.imageUrl ?? "",
       status: project.status,
+      category: project.category ?? "",
       order: project.order,
     });
     setIsNew(false);
@@ -97,7 +109,7 @@ export default function AdminProgettiPage() {
       editing.slug ||
       editing.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-    const body = { ...editing, slug, url: editing.url || null, githubUrl: editing.githubUrl || null, imageUrl: editing.imageUrl || null };
+    const body = { ...editing, slug, url: editing.url || null, githubUrl: editing.githubUrl || null, imageUrl: editing.imageUrl || null, category: editing.category || null };
 
     let res: Response;
     if (isNew) {
@@ -233,19 +245,35 @@ export default function AdminProgettiPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs text-sand/50 mb-1">Stato</label>
-            <select
-              value={editing.status}
-              onChange={(e) => updateField("status", e.target.value)}
-              className="bg-primary/40 border border-sand/10 rounded px-3 py-2 text-sand text-sm focus:outline-none focus:border-teal/40"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-sand/50 mb-1">Stato</label>
+              <select
+                value={editing.status}
+                onChange={(e) => updateField("status", e.target.value)}
+                className="w-full bg-primary/40 border border-sand/10 rounded px-3 py-2 text-sand text-sm focus:outline-none focus:border-teal/40"
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-sand/50 mb-1">Categoria</label>
+              <select
+                value={editing.category ?? ""}
+                onChange={(e) => updateField("category", e.target.value)}
+                className="w-full bg-primary/40 border border-sand/10 rounded px-3 py-2 text-sand text-sm focus:outline-none focus:border-teal/40"
+              >
+                {CATEGORY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 pt-2">
@@ -284,7 +312,12 @@ export default function AdminProgettiPage() {
               <Boxes size={16} className="text-teal/40 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sand text-sm font-medium truncate">{project.title}</p>
-                <p className="text-xs text-sand/40 truncate">{project.description}</p>
+                <p className="text-xs text-sand/40 truncate">
+                  {project.category && (
+                    <span className="text-teal/50 mr-2">[{project.category}]</span>
+                  )}
+                  {project.description}
+                </p>
               </div>
 
               <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${statusClass[project.status] ?? statusClass["archived"]}`}>

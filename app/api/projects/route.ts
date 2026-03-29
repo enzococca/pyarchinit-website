@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       githubUrl: data.githubUrl ?? null,
       imageUrl: data.imageUrl ?? null,
       status: data.status ?? "active",
+      category: data.category ?? null,
       order: data.order ?? 0,
     },
   });
