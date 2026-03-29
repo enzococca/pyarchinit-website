@@ -6,23 +6,26 @@ import Image from "next/image";
 import { X, Menu } from "lucide-react";
 import { SmartSearchTrigger } from "@/components/public/smart-search";
 import { useSearch } from "@/components/public/search-provider";
-
-const navLinks = [
-  { href: "/chi-siamo", label: "Chi siamo" },
-  { href: "/progetti", label: "Progetti" },
-  { href: "/corsi", label: "Corsi" },
-  { href: "/impara", label: "Impara" },
-  { href: "/docs", label: "Documentazione" },
-  { href: "/video", label: "Video" },
-  { href: "/servizi", label: "Servizi" },
-  { href: "/community", label: "Community" },
-  { href: "/forum", label: "Forum" },
-  { href: "/contatti", label: "Contatti" },
-];
+import { useLocale } from "@/components/public/locale-provider";
+import { LocaleSwitcher } from "@/components/public/locale-switcher";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useSearch();
+  const { t } = useLocale();
+
+  const navLinks = [
+    { href: "/chi-siamo", label: t("nav.chi_siamo") },
+    { href: "/progetti", label: t("nav.progetti") },
+    { href: "/corsi", label: t("nav.corsi") },
+    { href: "/impara", label: t("nav.impara") },
+    { href: "/docs", label: t("nav.docs") },
+    { href: "/video", label: t("nav.video") },
+    { href: "/servizi", label: t("nav.servizi") },
+    { href: "/community", label: t("nav.community") },
+    { href: "/forum", label: t("nav.forum") },
+    { href: "/contatti", label: t("nav.contatti") },
+  ];
 
   return (
     <>
@@ -48,14 +51,15 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* CTA + hamburger */}
+            {/* CTA + locale switcher + hamburger */}
             <div className="flex items-center gap-3">
               <SmartSearchTrigger onClick={openSearch} />
+              <LocaleSwitcher />
               <Link
                 href="/corsi"
                 className="hidden md:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
               >
-                Inizia
+                {t("nav.inizia")}
               </Link>
               <button
                 className="md:hidden p-2 text-sand/70 hover:text-sand transition-colors"
@@ -105,7 +109,7 @@ export function Navbar() {
               className="mt-4 px-8 py-3 rounded-card text-base font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              Inizia
+              {t("nav.inizia")}
             </Link>
           </nav>
         </div>
