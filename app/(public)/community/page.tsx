@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, GitPullRequest, MessageSquare } from "lucide-react";
+import { getServerLocale, t } from "@/lib/i18n";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Community | pyArchInit",
@@ -23,69 +26,66 @@ function GithubIcon({ size = 24, className = "" }: { size?: number; className?: 
   );
 }
 
-interface CardData {
-  iconEl: React.ReactNode;
-  title: string;
-  description: string;
-  linkLabel: string;
-  href: string;
-  external: boolean;
-}
+export default async function CommunityPage() {
+  const locale = await getServerLocale();
 
-const communityCards: CardData[] = [
-  {
-    iconEl: <GithubIcon size={24} className="text-teal" />,
-    title: "Codice sorgente",
-    description:
-      "Il codice di pyArchInit è completamente open source e disponibile su GitHub. Esplora il repository, segnala bug e proponi nuove funzionalità.",
-    linkLabel: "Vai su GitHub",
-    href: "https://github.com/pyarchinit",
-    external: true,
-  },
-  {
-    iconEl: <BookOpen size={24} className="text-teal" />,
-    title: "Documentazione",
-    description:
-      "Documentazione tecnica completa: guida all'installazione, API reference, tutorial e casi d'uso reali. Aggiornata ad ogni release.",
-    linkLabel: "Leggi la documentazione",
-    href: "/docs",
-    external: false,
-  },
-  {
-    iconEl: <GitPullRequest size={24} className="text-teal" />,
-    title: "Come contribuire",
-    description:
-      "Vuoi contribuire al progetto? Leggi la guida per contributor: dalla segnalazione di bug alla scrittura di documentazione, ogni contributo è benvenuto.",
-    linkLabel: "Guida per contributor",
-    href: "https://github.com/pyarchinit/contributing",
-    external: true,
-  },
-  {
-    iconEl: <MessageSquare size={24} className="text-teal" />,
-    title: "Forum",
-    description:
-      "Forum della community per domande, idee e confronto tra utenti. Connettiti con archeologi e sviluppatori da tutto il mondo.",
-    linkLabel: "Vai al Forum",
-    href: "/forum",
-    external: false,
-  },
-];
+  interface CardData {
+    iconEl: React.ReactNode;
+    title: string;
+    description: string;
+    linkLabel: string;
+    href: string;
+    external: boolean;
+  }
 
-export default function CommunityPage() {
+  const communityCards: CardData[] = [
+    {
+      iconEl: <GithubIcon size={24} className="text-teal" />,
+      title: t(locale, "community.sorgente.title"),
+      description: t(locale, "community.sorgente.desc"),
+      linkLabel: t(locale, "community.sorgente.link"),
+      href: "https://github.com/pyarchinit",
+      external: true,
+    },
+    {
+      iconEl: <BookOpen size={24} className="text-teal" />,
+      title: t(locale, "community.docs.title"),
+      description: t(locale, "community.docs.desc"),
+      linkLabel: t(locale, "community.docs.link"),
+      href: "/docs",
+      external: false,
+    },
+    {
+      iconEl: <GitPullRequest size={24} className="text-teal" />,
+      title: t(locale, "community.contribuire.title"),
+      description: t(locale, "community.contribuire.desc"),
+      linkLabel: t(locale, "community.contribuire.link"),
+      href: "https://github.com/pyarchinit/contributing",
+      external: true,
+    },
+    {
+      iconEl: <MessageSquare size={24} className="text-teal" />,
+      title: t(locale, "community.forum.title"),
+      description: t(locale, "community.forum.desc"),
+      linkLabel: t(locale, "community.forum.link"),
+      href: "/forum",
+      external: false,
+    },
+  ];
+
   return (
     <main>
       {/* Header */}
       <section className="bg-gradient-to-br from-primary via-[#0d1524] to-[#0a1020] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-teal font-mono text-sm tracking-widest uppercase mb-4">
-            Open Source
+            {t(locale, "community.subtitle")}
           </p>
           <h1 className="text-4xl sm:text-5xl font-mono font-bold text-sand mb-4">
-            Community
+            {t(locale, "community.title")}
           </h1>
           <p className="text-sand/60 text-lg max-w-xl">
-            pyArchInit è un progetto open source portato avanti da una community
-            internazionale di archeologi e sviluppatori.
+            {t(locale, "community.description")}
           </p>
         </div>
       </section>
@@ -131,11 +131,10 @@ export default function CommunityPage() {
       <section className="bg-code-bg border-t border-sand/10 py-16">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-mono font-bold text-sand mb-4">
-            Inizia a contribuire oggi
+            {t(locale, "community.cta.title")}
           </h2>
           <p className="text-sand/60 mb-8">
-            Non serve essere uno sviluppatore esperto. Puoi contribuire con segnalazioni,
-            traduzioni, documentazione o test.
+            {t(locale, "community.cta.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -151,7 +150,7 @@ export default function CommunityPage() {
               href="/docs"
               className="inline-flex items-center justify-center px-6 py-3 rounded-card border border-sand/20 text-sand hover:border-sand/40 transition-colors"
             >
-              Documentazione
+              {t(locale, "community.cta.docs")}
             </Link>
           </div>
         </div>

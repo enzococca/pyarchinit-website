@@ -8,6 +8,7 @@ import { ScrollReveal } from "@/components/public/scroll-reveal";
 import { AnimatedCounter } from "@/components/public/animated-counter";
 import { NewsletterForm } from "@/components/public/newsletter-form";
 import { HomeSearchBar } from "@/components/public/home-search-bar";
+import { getServerLocale, t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "pyArchInit - Piattaforma Open Source per l'Archeologia Digitale",
@@ -15,40 +16,68 @@ export const metadata: Metadata = {
     "Piattaforma open source per la gestione dei dati archeologici. Corsi, documentazione e strumenti per l'archeologia digitale.",
 };
 
-const perChiCards = [
-  {
-    icon: Users,
-    title: "Archeologi",
-    description:
-      "Strumenti professionali per la documentazione e gestione dei dati di scavo. Dall'acquisizione sul campo all'analisi e pubblicazione.",
-    href: "/corsi",
-    linkLabel: "Scopri i corsi",
-  },
-  {
-    icon: Building2,
-    title: "Enti e Istituzioni",
-    description:
-      "Soluzioni scalabili per soprintendenze, musei e università che necessitano di gestire grandi archivi di dati archeologici.",
-    href: "/servizi",
-    linkLabel: "Vedi i servizi",
-  },
-  {
-    icon: Code2,
-    title: "Sviluppatori",
-    description:
-      "Codice open source, API documentate e una community attiva. Contribuisci al progetto e integra pyArchInit nelle tue applicazioni.",
-    href: "/community",
-    linkLabel: "Unisciti alla community",
-  },
-];
+export default async function HomePage() {
+  const locale = await getServerLocale();
 
-const counters = [
-  { target: 10, suffix: "+ anni", label: "di sviluppo attivo" },
-  { target: 50, suffix: "+ contributori", label: "in tutto il mondo" },
-  { target: 200, suffix: "+ scavi", label: "documentati con pyArchInit" },
-];
+  const perChiCards = [
+    {
+      icon: Users,
+      title: t(locale, "home.perchi.archeologi.title"),
+      description: t(locale, "home.perchi.archeologi.desc"),
+      href: "/corsi",
+      linkLabel: t(locale, "home.perchi.archeologi.link"),
+    },
+    {
+      icon: Building2,
+      title: t(locale, "home.perchi.enti.title"),
+      description: t(locale, "home.perchi.enti.desc"),
+      href: "/servizi",
+      linkLabel: t(locale, "home.perchi.enti.link"),
+    },
+    {
+      icon: Code2,
+      title: t(locale, "home.perchi.sviluppatori.title"),
+      description: t(locale, "home.perchi.sviluppatori.desc"),
+      href: "/community",
+      linkLabel: t(locale, "home.perchi.sviluppatori.link"),
+    },
+  ];
 
-export default function HomePage() {
+  const counters = [
+    {
+      target: 10,
+      suffix: t(locale, "home.counter.anni"),
+      label: t(locale, "home.counter.anni.label"),
+    },
+    {
+      target: 50,
+      suffix: t(locale, "home.counter.contributori"),
+      label: t(locale, "home.counter.contributori.label"),
+    },
+    {
+      target: 200,
+      suffix: t(locale, "home.counter.scavi"),
+      label: t(locale, "home.counter.scavi.label"),
+    },
+  ];
+
+  const usedByNames =
+    locale === "en"
+      ? [
+          "Ludwig Maximilian Universität München",
+          "University of Salerno",
+          "University of Pisa",
+          "Paestum Archaeological Park",
+          "Projects in Italy and Lebanon",
+        ]
+      : [
+          "Ludwig Maximilian Universität München",
+          "Università di Salerno",
+          "Università di Pisa",
+          "Parco Archeologico di Paestum",
+          "Progetti in Italia e Libano",
+        ];
+
   return (
     <main>
       {/* Hero */}
@@ -81,35 +110,36 @@ export default function HomePage() {
                 />
               </div>
               <p className="text-teal font-mono text-sm tracking-widest uppercase mb-6">
-                Open Source &middot; Archeologia Digitale
+                {t(locale, "home.hero.subtitle")}
               </p>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-mono font-bold text-sand leading-tight mb-6">
-                Piattaforma Open Source per{" "}
-                <span className="text-teal">l&apos;Archeologia Digitale</span>
+                {t(locale, "home.hero.title1")}{" "}
+                <span className="text-teal">{t(locale, "home.hero.title2")}</span>
               </h1>
               <p className="text-lg text-sand/70 mb-10 leading-relaxed max-w-xl">
-                Progetto nato nel 2005 per creare un plugin Python per QGIS per la gestione
-                dei dati archeologici su piattaforma GIS. Integrazione di dati alfanumerici,
-                cartografici e multimediali.
+                {t(locale, "home.hero.description")}
+                {locale === "it" && (
+                  <> Integrazione di dati alfanumerici, cartografici e multimediali.</>
+                )}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/corsi"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-card bg-teal text-primary font-medium hover:bg-teal/90 transition-colors"
                 >
-                  Esplora i corsi
+                  {t(locale, "home.hero.cta_corsi")}
                 </Link>
                 <Link
                   href="/docs"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-card border border-sand/20 text-sand hover:border-sand/40 hover:text-sand transition-colors"
                 >
-                  Documentazione
+                  {t(locale, "home.hero.cta_docs")}
                 </Link>
                 <Link
                   href="/community"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-card border border-teal/20 text-teal hover:border-teal/40 transition-colors"
                 >
-                  Contribuisci
+                  {t(locale, "home.hero.cta_community")}
                 </Link>
               </div>
 
@@ -131,14 +161,10 @@ export default function HomePage() {
           <ScrollReveal>
             <div className="max-w-2xl mx-auto text-center mb-14">
               <h2 className="text-3xl sm:text-4xl font-mono font-bold text-primary mb-6">
-                Cosa è pyArchInit?
+                {t(locale, "home.cosa.title")}
               </h2>
               <p className="text-primary/70 text-lg leading-relaxed">
-                pyArchInit è un plugin Python per QGIS (GIS open-source) che consente
-                l&apos;integrazione di dati alfanumerici, spaziali e multimediali in
-                un&apos;unica piattaforma pensata per la documentazione archeologica
-                (unità stratigrafiche, reperti, strutture, siti) e la loro
-                rappresentazione GIS.
+                {t(locale, "home.cosa.detail")}
               </p>
             </div>
           </ScrollReveal>
@@ -167,23 +193,17 @@ export default function HomePage() {
           <ScrollReveal>
             <div className="text-center mb-10">
               <p className="text-teal font-mono text-xs tracking-widest uppercase mb-3">
-                Usato da
+                {t(locale, "home.usato.label")}
               </p>
               <h2 className="text-2xl sm:text-3xl font-mono font-bold text-sand mb-3">
-                Chi usa pyArchInit?
+                {t(locale, "home.usato.title")}
               </h2>
               <p className="text-sand/40 text-sm max-w-lg mx-auto">
-                Università, enti pubblici e progetti di ricerca in Italia e nel mondo.
+                {t(locale, "home.usato.desc")}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-              {[
-                "Ludwig Maximilian Universität München",
-                "Università di Salerno",
-                "Università di Pisa",
-                "Parco Archeologico di Paestum",
-                "Progetti in Italia e Libano",
-              ].map((name) => (
+              {usedByNames.map((name) => (
                 <div
                   key={name}
                   className="px-5 py-3 rounded-card bg-code-bg border border-sand/10 text-sand/60 text-sm font-mono hover:border-teal/30 hover:text-sand/80 transition-colors text-center"
@@ -202,11 +222,10 @@ export default function HomePage() {
           <ScrollReveal>
             <div className="text-center mb-14">
               <h2 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-4">
-                Per chi è pyArchInit?
+                {t(locale, "home.perchi.title")}
               </h2>
               <p className="text-sand/50 max-w-xl mx-auto">
-                Una piattaforma progettata per soddisfare le esigenze di tutti gli attori
-                del mondo dell&apos;archeologia digitale.
+                {t(locale, "home.perchi.subtitle")}
               </p>
             </div>
           </ScrollReveal>
@@ -244,10 +263,10 @@ export default function HomePage() {
           <ScrollReveal>
             <div className="max-w-2xl mx-auto text-center">
               <h2 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-4">
-                Resta aggiornato
+                {t(locale, "home.newsletter.title")}
               </h2>
               <p className="text-sand/50 mb-8 text-lg">
-                Iscriviti alla newsletter per ricevere novità su corsi, aggiornamenti e guide.
+                {t(locale, "home.newsletter.description")}
               </p>
               <div className="max-w-md mx-auto">
                 <NewsletterForm />
@@ -266,24 +285,23 @@ export default function HomePage() {
           <ScrollReveal>
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-mono font-bold text-sand mb-4">
-                Pronto a iniziare?
+                {t(locale, "home.cta.title")}
               </h2>
               <p className="text-sand/60 mb-10 text-lg">
-                Unisciti alla community di archeologi e sviluppatori che usano pyArchInit per
-                portare la gestione dei dati archeologici nel XXI secolo.
+                {t(locale, "home.cta.description_full")}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/corsi"
                   className="inline-flex items-center justify-center px-8 py-3 rounded-card bg-teal text-primary font-medium hover:bg-teal/90 transition-colors"
                 >
-                  Scopri i corsi
+                  {t(locale, "home.cta.corsi")}
                 </Link>
                 <Link
                   href="/contatti"
                   className="inline-flex items-center justify-center px-8 py-3 rounded-card border border-sand/30 text-sand hover:border-sand/60 transition-colors"
                 >
-                  Contattaci
+                  {t(locale, "home.cta.contatti")}
                 </Link>
               </div>
             </div>

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Database, Map, GraduationCap, Wrench } from "lucide-react";
+import { getServerLocale, t } from "@/lib/i18n";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Servizi | pyArchInit",
@@ -8,48 +11,45 @@ export const metadata: Metadata = {
     "Scopri i servizi professionali di pyArchInit: gestione dati, GIS, formazione e sviluppo software personalizzato per l'archeologia.",
 };
 
-const services = [
-  {
-    icon: Database,
-    title: "Gestione Dati Archeologici",
-    description:
-      "Implementazione e configurazione di database relazionali per la gestione strutturata dei dati di scavo, unità stratigrafiche, reperti e contesti. Migrazione da sistemi legacy e integrazione con flussi di lavoro esistenti.",
-  },
-  {
-    icon: Map,
-    title: "GIS e Cartografia",
-    description:
-      "Servizi di supporto per la gestione dei dati geografici: configurazione di sistemi GIS integrati con pyArchInit, elaborazione di planimetrie, piante di scavo e analisi spaziali dei contesti archeologici.",
-  },
-  {
-    icon: GraduationCap,
-    title: "Formazione",
-    description:
-      "Corsi e workshop su misura per enti, soprintendenze e università. Formazione pratica sull'utilizzo di pyArchInit, dalla documentazione sul campo all'analisi dei dati in laboratorio.",
-  },
-  {
-    icon: Wrench,
-    title: "Sviluppo Custom",
-    description:
-      "Estensioni, plugin e integrazioni personalizzate per adattare pyArchInit alle specifiche esigenze del tuo progetto. Sviluppo di interfacce dedicate e connettori per sistemi terzi.",
-  },
-];
+export default async function ServiziPage() {
+  const locale = await getServerLocale();
 
-export default function ServiziPage() {
+  const services = [
+    {
+      icon: Database,
+      title: t(locale, "servizi.gestione.title"),
+      description: t(locale, "servizi.gestione.desc"),
+    },
+    {
+      icon: Map,
+      title: t(locale, "servizi.gis.title"),
+      description: t(locale, "servizi.gis.desc"),
+    },
+    {
+      icon: GraduationCap,
+      title: t(locale, "servizi.formazione.title"),
+      description: t(locale, "servizi.formazione.desc"),
+    },
+    {
+      icon: Wrench,
+      title: t(locale, "servizi.custom.title"),
+      description: t(locale, "servizi.custom.desc"),
+    },
+  ];
+
   return (
     <main>
       {/* Header */}
       <section className="bg-gradient-to-br from-primary via-[#0d1524] to-[#0a1020] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-teal font-mono text-sm tracking-widest uppercase mb-4">
-            Servizi professionali
+            {t(locale, "servizi.subtitle")}
           </p>
           <h1 className="text-4xl sm:text-5xl font-mono font-bold text-sand mb-4">
-            Servizi
+            {t(locale, "servizi.title")}
           </h1>
           <p className="text-sand/60 text-lg max-w-xl">
-            Supporto professionale per portare l&apos;archeologia digitale al livello
-            successivo, dalla progettazione all&apos;implementazione.
+            {t(locale, "servizi.description")}
           </p>
         </div>
       </section>
@@ -71,7 +71,7 @@ export default function ServiziPage() {
                 href="/contatti"
                 className="inline-flex items-center text-sm text-teal hover:text-teal/80 transition-colors font-medium"
               >
-                Richiedi un preventivo &rarr;
+                {t(locale, "servizi.richiedi")} &rarr;
               </Link>
             </div>
           ))}
@@ -82,17 +82,16 @@ export default function ServiziPage() {
       <section className="bg-code-bg border-t border-sand/10 py-16">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-mono font-bold text-sand mb-4">
-            Hai un progetto in mente?
+            {t(locale, "servizi.cta.title")}
           </h2>
           <p className="text-sand/60 mb-8">
-            Contattaci per discutere le tue esigenze e ricevere un preventivo
-            personalizzato.
+            {t(locale, "servizi.cta.description")}
           </p>
           <Link
             href="/contatti"
             className="inline-flex items-center px-8 py-3 rounded-card bg-teal text-primary font-medium hover:bg-teal/90 transition-colors"
           >
-            Contattaci
+            {t(locale, "servizi.cta.button")}
           </Link>
         </div>
       </section>
