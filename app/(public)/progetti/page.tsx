@@ -32,6 +32,7 @@ const CATEGORY_ORDER = [
   "Plugin QGIS",
   "Web App",
   "Pacchetti Python",
+  "Pacchetti R",
   "App Mobile",
   "Strumenti",
 ];
