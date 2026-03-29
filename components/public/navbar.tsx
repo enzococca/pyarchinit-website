@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/chi-siamo", label: "Chi siamo" },
   { href: "/progetti", label: "Progetti" },
   { href: "/corsi", label: "Corsi" },
+  { href: "/impara", label: "Impara" },
   { href: "/docs", label: "Documentazione" },
   { href: "/video", label: "Video" },
   { href: "/servizi", label: "Servizi" },

@@ -24,6 +24,7 @@ model User {
   lessonProgress LessonProgress[]
   forumThreads  ForumThread[]
   forumReplies  ForumReply[]
+  interactiveProgress InteractiveLessonProgress[]
 }
 
 enum UserRole {
@@ -351,6 +352,67 @@ enum CampaignStatus {
   DRAFT
   SENDING
   SENT
+}
+
+// ============ INTERACTIVE COURSES ============
+
+model InteractiveCourse {
+  id          String @id @default(cuid())
+  title       String
+  slug        String @unique
+  description String @db.Text
+  category    String // "database", "python", "ai"
+  difficulty  String @default("beginner") // beginner, intermediate, advanced
+  imageUrl    String?
+  published   Boolean @default(false)
+  order       Int @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules InteractiveModule[]
+}
+
+model InteractiveModule {
+  id       String @id @default(cuid())
+  title    String
+  order    Int
+  courseId String
+
+  course   InteractiveCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons  InteractiveLesson[]
+
+  @@index([courseId])
+}
+
+model InteractiveLesson {
+  id       String @id @default(cuid())
+  title    String
+  slug     String @unique
+  type     String // "lesson" or "lab"
+  content  String @db.Text
+  order    Int
+  moduleId String
+
+  module   InteractiveModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress InteractiveLessonProgress[]
+
+  @@index([moduleId])
+}
+
+model InteractiveLessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean  @default(false)
+  score       Float?
+  answers     Json?
+  completedAt DateTime?
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson InteractiveLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
 }
 
 // ============ PROJECTS ============
