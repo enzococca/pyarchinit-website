@@ -13,15 +13,19 @@ export function LocaleSwitcher() {
     const newLocale = locale === "it" ? "en" : "it";
     setLocaleCookie(newLocale);
     setLocale(newLocale);
-    window.location.reload(); // Simplest approach for Phase 1
+    // Force hard navigation to bypass Next.js cache
+    window.location.href = window.location.pathname + "?lang=" + newLocale + "&t=" + Date.now();
   };
 
   return (
     <button
       onClick={toggle}
-      className="text-xs font-mono text-sand/50 hover:text-teal transition px-2 py-1 border border-sand/10 rounded"
+      className="flex items-center gap-1.5 text-xs font-mono text-sand/60 hover:text-teal transition px-2.5 py-1.5 border border-sand/15 rounded-lg hover:border-teal/30"
+      title={locale === "it" ? "Switch to English" : "Passa all'italiano"}
     >
-      {locale === "it" ? "EN" : "IT"}
+      <span className={locale === "it" ? "text-teal font-bold" : "text-sand/40"}>IT</span>
+      <span className="text-sand/20">/</span>
+      <span className={locale === "en" ? "text-teal font-bold" : "text-sand/40"}>EN</span>
     </button>
   );
 }
