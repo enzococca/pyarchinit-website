@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { GitFork, ExternalLink, Boxes } from "lucide-react";
+import { GitFork, ExternalLink, Boxes, Handshake } from "lucide-react";
 import { prisma } from "@/lib/db";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,6 +200,53 @@ export default async function ProgettiPage() {
               })}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Collaborazioni */}
+      <section className="bg-sand py-16 px-4 border-t border-primary/5">
+        <div className="max-w-6xl mx-auto">
+          <ScrollReveal>
+            <div className="flex items-center gap-3 mb-8">
+              <Handshake size={24} className="text-terracotta" />
+              <h2 className="text-xl font-mono text-primary">
+                Collaborazioni e Progetti Europei
+              </h2>
+            </div>
+          </ScrollReveal>
+          <div className="grid md:grid-cols-2 gap-6">
+            <ScrollReveal>
+              <a
+                href="https://stratigraph-eccch.eu/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-white rounded-card shadow-sm border border-primary/5 p-6 hover:shadow-md transition-shadow group"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center shrink-0">
+                    <span className="text-terracotta font-mono font-bold text-sm">EU</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-mono text-primary font-semibold group-hover:text-terracotta transition mb-2">
+                      StratiGraph
+                    </h3>
+                    <p className="text-xs font-mono text-terracotta/70 mb-3">
+                      Horizon Europe &middot; ECCCH
+                    </p>
+                    <p className="text-primary/60 text-sm leading-relaxed">
+                      Progetto europeo Horizon Europe per lo sviluppo di standard e strumenti digitali
+                      per la documentazione stratigrafica archeologica. pyArchInit partecipa come
+                      partner tecnico per l&apos;integrazione GIS e la gestione dei dati di scavo
+                      all&apos;interno della European Collaborative Cloud for Cultural Heritage.
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-sm text-teal mt-3 group-hover:underline">
+                      stratigraph-eccch.eu <ExternalLink size={12} />
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </ScrollReveal>
+          </div>
         </div>
       </section>
 
