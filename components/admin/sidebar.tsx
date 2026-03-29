@@ -16,6 +16,7 @@ const navItems = [
   { href: "/admin/blog", label: "Blog", icon: PenSquare },
   { href: "/admin/media", label: "Media", icon: ImageIcon },
   { href: "/admin/docs", label: "Documentazione", icon: BookOpen },
+  { href: "/admin/chi-siamo", label: "Chi siamo", icon: Users },
   { href: "/admin/studenti", label: "Studenti", icon: Users },
   { href: "/admin/contatti", label: "Contatti", icon: Mail },
   { href: "/admin/forum", label: "Forum", icon: MessageSquare },

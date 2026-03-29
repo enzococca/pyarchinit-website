@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ScrollReveal } from "@/components/public/scroll-reveal";
 import { SectionDivider } from "@/components/public/section-divider";
 import { GitFork, GraduationCap, Code, Globe } from "lucide-react";
+import { prisma } from "@/lib/db";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,32 +12,14 @@ export const metadata: Metadata = {
   description: "Il team dietro pyArchInit: Luca Mandolesi e Enzo Cocca, fondatori della piattaforma open source per l'archeologia digitale.",
 };
 
-const founders = [
-  {
-    name: "Luca Mandolesi",
-    role: "Fondatore di pyArchInit / Direttore ICT",
-    photo: "/images/team_luca.jpg",
-    bio: "Laureato in Scienze Archeologiche con indirizzo medievale presso l'Università di Siena. Dal 2005 gestisce lo sviluppo di pyArchInit, il plugin open-source per QGIS dedicato alla gestione dei dati di scavo su piattaforma GIS. Esperto in rilievo GNSS, Structure From Motion, QGIS e modellazione 3D con Blender. Co-fondatore di GFOSS.it e ArcheoFOSS. Dirige il programma di formazione Flyover Academy.",
-    registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.5059",
-    highlights: [
-      { icon: Code, text: "Creatore di pyArchInit (2005)" },
-      { icon: GraduationCap, text: "Direttore Flyover Academy" },
-      { icon: Globe, text: "Co-fondatore GFOSS.it e ArcheoFOSS" },
-    ],
-  },
-  {
-    name: "Enzo Cocca",
-    role: "Fondatore di pyArchInit / Sviluppo e Innovazione",
-    photo: "/images/team_enzo.jpg",
-    bio: "Specializzato in informatica applicata all'archeologia e alla preistoria. Dottore di ricerca in Scienze e Tecnologie per l'Archeologia e i Beni Culturali. Sviluppa soluzioni software per la documentazione e gestione dei dati archeologici. Attivo in progetti di ricerca in Italia, Africa, Asia, Medio Oriente e Indonesia.",
-    registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.4045",
-    highlights: [
-      { icon: Code, text: "Lead Developer pyArchInit" },
-      { icon: Globe, text: "Ricerca in 4 continenti" },
-      { icon: GraduationCap, text: "PhD Scienze e Tecnologie per l'Archeologia" },
-    ],
-  },
-];
+const DEFAULT_LUCA_BIO =
+  "Laureato in Scienze Archeologiche con indirizzo medievale presso l'Università di Siena. Dal 2005 gestisce lo sviluppo di pyArchInit, il plugin open-source per QGIS dedicato alla gestione dei dati di scavo su piattaforma GIS. Esperto in rilievo GNSS, Structure From Motion, QGIS e modellazione 3D con Blender. Dirige il programma di formazione Flyover Academy.";
+
+const DEFAULT_ENZO_BIO =
+  "Specializzato in informatica applicata all'archeologia e alla preistoria. Dottore di ricerca in Scienze e Tecnologie per l'Archeologia e i Beni Culturali. Sviluppa soluzioni software per la documentazione e gestione dei dati archeologici. Attivo in progetti di ricerca in Italia, Africa, Asia, Medio Oriente e Indonesia.";
+
+const DEFAULT_DESCRIPTION =
+  "pyArchInit è un progetto open source sviluppato e mantenuto da Luca Mandolesi ed Enzo Cocca. Il progetto combina competenze archeologiche con tecnologie all'avanguardia: GIS, droni, fotogrammetria, modellazione 3D e intelligenza artificiale applicata ai beni culturali.";
 
 const partners = [
   "Ludwig Maximilian Universität München",
@@ -46,7 +29,55 @@ const partners = [
   "Progetti archeologici in Libano",
 ];
 
-export default function ChiSiamoPage() {
+async function getSettings(): Promise<{ luca_bio: string; enzo_bio: string; description: string }> {
+  try {
+    const rows = await prisma.siteSetting.findMany({
+      where: { key: { in: ["chisiamo_luca_bio", "chisiamo_enzo_bio", "chisiamo_description"] } },
+    });
+    const map: Record<string, string> = {};
+    for (const row of rows) {
+      map[row.key] = typeof row.value === "string" ? row.value : String(row.value);
+    }
+    return {
+      luca_bio: map["chisiamo_luca_bio"] || DEFAULT_LUCA_BIO,
+      enzo_bio: map["chisiamo_enzo_bio"] || DEFAULT_ENZO_BIO,
+      description: map["chisiamo_description"] || DEFAULT_DESCRIPTION,
+    };
+  } catch {
+    return { luca_bio: DEFAULT_LUCA_BIO, enzo_bio: DEFAULT_ENZO_BIO, description: DEFAULT_DESCRIPTION };
+  }
+}
+
+export default async function ChiSiamoPage() {
+  const settings = await getSettings();
+
+  const founders = [
+    {
+      name: "Luca Mandolesi",
+      role: "Fondatore di pyArchInit / Direttore ICT",
+      photo: "/images/team_luca.jpg",
+      bio: settings.luca_bio,
+      registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.5059",
+      highlights: [
+        { icon: Code, text: "Creatore di pyArchInit (2005)" },
+        { icon: GraduationCap, text: "Direttore Flyover Academy" },
+        { icon: Globe, text: "Esperto GIS, fotogrammetria e Blender" },
+      ],
+    },
+    {
+      name: "Enzo Cocca",
+      role: "Fondatore di pyArchInit / Sviluppo e Innovazione",
+      photo: "/images/team_enzo.jpg",
+      bio: settings.enzo_bio,
+      registration: "Iscritto all'elenco dei professionisti dei beni culturali, Fascia I n.4045",
+      highlights: [
+        { icon: Code, text: "Lead Developer pyArchInit" },
+        { icon: Globe, text: "Ricerca in 4 continenti" },
+        { icon: GraduationCap, text: "PhD Scienze e Tecnologie per l'Archeologia" },
+      ],
+    },
+  ];
+
   return (
     <>
       {/* Hero */}
@@ -155,10 +186,8 @@ export default function ChiSiamoPage() {
               className="mx-auto mb-8"
             />
             <h2 className="text-3xl font-mono text-teal mb-6">pyArchInit</h2>
-            <p className="text-sand/60 leading-relaxed mb-8">
-              pyArchInit è un progetto open source sviluppato e mantenuto da Luca Mandolesi ed Enzo Cocca.
-              Il progetto combina competenze archeologiche con tecnologie all&apos;avanguardia: GIS, droni,
-              fotogrammetria, modellazione 3D e intelligenza artificiale applicata ai beni culturali.
+            <p className="text-sand/60 leading-relaxed mb-8 whitespace-pre-line">
+              {settings.description}
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <a
