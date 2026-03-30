@@ -3,34 +3,32 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { PlayCircle, ExternalLink } from "lucide-react";
 import { getServerLocale, t } from "@/lib/i18n";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Video Tutorial | pyArchInit",
   description: "Video tutorial ufficiali di pyArchInit: guide passo-passo per imparare ad usare il plugin QGIS per l'archeologia.",
 };
 
-const videos = [
-  { id: "UjJOEty0vSI", title: "Nuovo sistema simboli per USM", category: "Funzionalità" },
-  { id: "UwvDLGMD80s", title: "Gestione alzati - pyArchInit Goes2Blend 3D", category: "3D" },
-  { id: "sKZwFFI6TxQ", title: "Spostare punti da coordinate relative ad assolute", category: "GIS" },
-  { id: "06CZCq4cREI", title: "Drone Unit for pyArchInit", category: "Droni" },
-  { id: "tQfZ2kxicY0", title: "Tafonomia", category: "Schede" },
-  { id: "e3jCS17g43s", title: "Strutture e ipotesi", category: "Schede" },
-  { id: "w-VOrRgGcfw", title: "Campioni", category: "Schede" },
-  { id: "v4G03oX9SCM", title: "Reperti", category: "Schede" },
-  { id: "_n_O6TCdObY", title: "Layer US e quote", category: "Layer GIS" },
-  { id: "sfW7xOsmLFc", title: "Layer sezioni", category: "Layer GIS" },
-  { id: "naCytTz0sSk", title: "Layer sondaggi", category: "Layer GIS" },
-  { id: "388hhkz55EY", title: "Layer individui", category: "Layer GIS" },
-  { id: "AQFYxNg4Agc", title: "Layer siti (puntuali e poligonali)", category: "Layer GIS" },
-  { id: "SU1hJatrf0E", title: "Layer punti di riferimento", category: "Layer GIS" },
-  { id: "BbnLfQDfkxg", title: "Layer linee di riferimento", category: "Layer GIS" },
-];
-
-const categories = Array.from(new Set(videos.map(v => v.category)));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = prisma as any;
 
 export default async function VideoPage() {
   const locale = await getServerLocale();
+
+  const videos: Array<{
+    id: string;
+    youtubeId: string;
+    title: string;
+    category: string;
+    description: string | null;
+    order: number;
+  }> = await db.video.findMany({
+    where: { published: true },
+    orderBy: { order: "asc" },
+  });
+
+  const categories = Array.from(new Set(videos.map((v) => v.category)));
 
   return (
     <main>
@@ -70,20 +68,20 @@ export default async function VideoPage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {categories.map(cat => (
+        {categories.map((cat) => (
           <div key={cat} className="mb-12">
             <h2 className="text-sm font-mono text-teal uppercase tracking-widest mb-6 flex items-center gap-2">
               <PlayCircle size={14} />
               {t(locale, `video.cat.${cat}`) || cat}
               <span className="text-sand/20 font-normal">
-                ({videos.filter(v => v.category === cat).length})
+                ({videos.filter((v) => v.category === cat).length})
               </span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {videos.filter(v => v.category === cat).map(video => (
+              {videos.filter((v) => v.category === cat).map((video) => (
                 <a
                   key={video.id}
-                  href={`https://www.youtube.com/watch?v=${video.id}`}
+                  href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group bg-code-bg border border-sand/8 hover:border-teal/25 rounded-card overflow-hidden transition-all"
@@ -91,7 +89,7 @@ export default async function VideoPage() {
                   {/* Thumbnail */}
                   <div className="relative aspect-video bg-primary">
                     <img
-                      src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
+                      src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
                       alt={video.title}
                       className="w-full h-full object-cover group-hover:opacity-80 transition"
                     />
