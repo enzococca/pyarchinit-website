@@ -27,8 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function LessonPage({ params }: Props) {
+  console.log("[LESSON PAGE] params:", JSON.stringify(params));
   const session = await getSession();
   const userId = session?.user ? (session.user as { id?: string }).id ?? null : null;
+  console.log("[LESSON PAGE] userId:", userId, "session:", !!session?.user);
 
   // Load lesson with module and course
   const lesson = await prisma.interactiveLesson.findUnique({
@@ -54,22 +56,28 @@ export default async function LessonPage({ params }: Props) {
     },
   });
 
+  console.log("[LESSON PAGE] lesson found:", !!lesson, "slug searched:", params.lessonSlug);
   if (!lesson) notFound();
   if (!lesson.module.course.published) notFound();
 
   const course = lesson.module.course;
+  console.log("[LESSON PAGE] course:", course.slug, "price:", course.price, "isPaid:", course.price > 0);
 
   // Access check — redirect to course page with paywall if no access
   const isPaid = course.price > 0;
   if (isPaid) {
     if (!userId) {
+      console.log("[LESSON PAGE] NO USER - redirecting to course paywall");
       redirect(`/impara/${course.slug}`);
     }
     const access = await hasCoursePaid(userId, course.slug);
+    console.log("[LESSON PAGE] access check:", access, "for user:", userId);
     if (!access) {
+      console.log("[LESSON PAGE] NO ACCESS - redirecting to course paywall");
       redirect(`/impara/${course.slug}`);
     }
   }
+  console.log("[LESSON PAGE] RENDERING LESSON:", lesson.title, "content length:", lesson.content.length);
 
   // Build flat lesson list for prev/next
   const allLessons = course.modules.flatMap((m) => m.lessons);
