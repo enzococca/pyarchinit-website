@@ -107,12 +107,12 @@ export default function AdminPageEditorPage() {
             <span className="font-semibold">Pubblicata — visibile sul sito</span>{" "}
             all&apos;indirizzo{" "}
             <a
-              href={`/${slug}`}
+              href={`/pagina/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-teal/80"
             >
-              /{slug}
+              /pagina/{slug}
             </a>
           </p>
         </div>

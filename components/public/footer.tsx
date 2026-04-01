@@ -114,7 +114,7 @@ export function Footer({ cmsPages = [], locale = "it" }: FooterProps) {
               {cmsPages.map((page) => (
                 <li key={page.slug}>
                   <Link
-                    href={`/${page.slug}`}
+                    href={`/pagina/${page.slug}`}
                     className="text-sm text-sand/50 hover:text-sand transition-colors"
                   >
                     {page.title}

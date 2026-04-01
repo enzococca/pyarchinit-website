@@ -51,12 +51,18 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* CTA + locale switcher + hamburger */}
+            {/* CTA + login + locale switcher + hamburger */}
             <div className="flex items-center gap-3">
               <SmartSearchTrigger onClick={openSearch} />
               <LocaleSwitcher />
               <Link
-                href="/corsi"
+                href="/login"
+                className="hidden md:inline-flex items-center px-3 py-1.5 rounded-card text-xs font-mono text-sand/60 border border-sand/15 hover:border-teal/30 hover:text-teal transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                href="/login"
                 className="hidden md:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
               >
                 {t("nav.inizia")}
