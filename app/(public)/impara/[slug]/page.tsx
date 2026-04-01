@@ -82,9 +82,11 @@ export default async function CourseDetailPage({ params }: Props) {
   // First lesson for "Start" button
   const firstLesson = course.modules[0]?.lessons[0];
 
-  // Access check
+  // Access check - paid courses ALWAYS require login + payment
   const isPaid = course.price > 0;
-  const hasAccess = userId ? await hasCoursePaid(userId, course.slug) : !isPaid;
+  const hasAccess = isPaid
+    ? (userId ? await hasCoursePaid(userId, course.slug) : false)
+    : true; // Free courses are always accessible
 
   return (
     <main>
