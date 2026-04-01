@@ -84,6 +84,35 @@ function SqlBlock({ code }: { code: string }) {
   );
 }
 
+function PythonReadOnlyBlock({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  return (
+    <div className="my-4 rounded-xl border border-ochre/20 bg-[#0d1117] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 bg-ochre/5 border-b border-ochre/10">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-ochre/60 uppercase tracking-widest">Python / QGIS</span>
+          <span className="text-[10px] text-ochre/40 bg-ochre/10 px-2 py-0.5 rounded-full">Richiede QGIS Desktop</span>
+        </div>
+        <button
+          onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+          className="text-xs font-mono text-sand/40 hover:text-sand transition px-2 py-1 rounded hover:bg-sand/10"
+        >
+          {copied ? "✓ Copiato" : "Copia"}
+        </button>
+      </div>
+      <pre className="p-4 overflow-x-auto text-sm leading-relaxed font-mono text-sand/70">
+        <code>{code}</code>
+      </pre>
+      <div className="px-4 py-2 bg-ochre/5 border-t border-ochre/10">
+        <p className="text-[10px] text-ochre/50">
+          ⚠ Questo codice utilizza PyQGIS e deve essere eseguito nella Console Python di QGIS Desktop (Plugin → Console Python)
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function GenericCodeBlock({ code }: { code: string }) {
   return (
     <div className="my-4 rounded-xl border border-sand/10 bg-[#0d1117] overflow-hidden">
@@ -95,8 +124,8 @@ function GenericCodeBlock({ code }: { code: string }) {
 }
 
 /** Parse HTML string and extract code blocks, replacing them with placeholders */
-function parseContent(html: string): { segments: Array<{ type: "html" | "python" | "sql" | "code"; content: string }>} {
-  const segments: Array<{ type: "html" | "python" | "sql" | "code"; content: string }> = [];
+function parseContent(html: string): { segments: Array<{ type: "html" | "python" | "python-readonly" | "sql" | "code"; content: string }>} {
+  const segments: Array<{ type: "html" | "python" | "python-readonly" | "sql" | "code"; content: string }> = [];
 
   // Split HTML by <pre><code> blocks
   const regex = /<pre><code(?:\s+class="language-(\w+)")?>([\s\S]*?)<\/code><\/pre>/g;
@@ -119,7 +148,12 @@ function parseContent(html: string): { segments: Array<{ type: "html" | "python"
       .replace(/&#39;/g, "'");
 
     if (language === "python" || (!language && detectPython(code))) {
-      segments.push({ type: "python", content: code });
+      // QGIS code can't run in Pyodide - mark as read-only
+      if (detectQgis(code)) {
+        segments.push({ type: "python-readonly", content: code });
+      } else {
+        segments.push({ type: "python", content: code });
+      }
     } else if (language === "sql" || (!language && detectSql(code))) {
       segments.push({ type: "sql", content: code });
     } else {
@@ -139,6 +173,10 @@ function parseContent(html: string): { segments: Array<{ type: "html" | "python"
 
 function detectPython(code: string): boolean {
   return /\b(def |import |from |print\(|class |elif |for .* in |while |try:|except |lambda |None|True|False)\b/.test(code);
+}
+
+function detectQgis(code: string): boolean {
+  return /\b(import qgis|from qgis|QgsApplication|QgsVectorLayer|QgsRasterLayer|QgsProject|QgsFeature|QgsField|QgsGeometry|processing\.run|iface\.|QgsMapCanvas|QgsSingleSymbolRenderer|QgsGraduatedSymbolRenderer)\b/.test(code);
 }
 
 function detectSql(code: string): boolean {
@@ -173,6 +211,9 @@ export function InteractiveContent({ html }: InteractiveContentProps) {
           }
           if (seg.type === "python") {
             return <PythonBlock key={i} code={seg.content} />;
+          }
+          if (seg.type === "python-readonly") {
+            return <PythonReadOnlyBlock key={i} code={seg.content} />;
           }
           if (seg.type === "sql") {
             return <SqlBlock key={i} code={seg.content} />;
