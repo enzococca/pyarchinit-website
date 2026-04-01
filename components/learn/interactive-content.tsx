@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { SqlPlayground } from "./sql-playground";
+import { PythonPlayground } from "./python-playground";
 
 interface InteractiveContentProps {
   html: string;
@@ -55,6 +56,103 @@ function highlightSql(code: string): string {
   result = result.replace(/\x00STR(\d+)\x00/g, (_m, idx) => strings[parseInt(idx)]);
 
   return result;
+}
+
+// Syntax highlight Python keywords in rendered text
+function highlightPython(code: string): string {
+  const keywords = [
+    "False", "None", "True", "and", "as", "assert", "async", "await",
+    "break", "class", "continue", "def", "del", "elif", "else", "except",
+    "finally", "for", "from", "global", "if", "import", "in", "is",
+    "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try",
+    "while", "with", "yield",
+  ];
+  const builtins = [
+    "print", "len", "range", "int", "float", "str", "list", "dict",
+    "tuple", "set", "bool", "type", "isinstance", "enumerate", "zip",
+    "map", "filter", "sorted", "reversed", "open", "sum", "min", "max",
+    "abs", "round", "input", "super", "self",
+  ];
+
+  let result = code
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const strings: string[] = [];
+  result = result.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (_m, s) => {
+    const idx = strings.length;
+    strings.push(`<span class="py-string">"${s}"</span>`);
+    return `\x00STR${idx}\x00`;
+  });
+  result = result.replace(/'([^'\\]*(\\.[^'\\]*)*)'/g, (_m, s) => {
+    const idx = strings.length;
+    strings.push(`<span class="py-string">'${s}'</span>`);
+    return `\x00STR${idx}\x00`;
+  });
+
+  result = result.replace(/(#[^\n]*)/g, '<span class="py-comment">$1</span>');
+  result = result.replace(/\b(\d+\.?\d*)\b/g, '<span class="py-number">$1</span>');
+
+  const kwRe = new RegExp(`\\b(${keywords.join("|")})\\b`, "g");
+  result = result.replace(kwRe, '<span class="py-keyword">$1</span>');
+
+  const builtinRe = new RegExp(`\\b(${builtins.join("|")})\\b`, "g");
+  result = result.replace(builtinRe, '<span class="py-builtin">$1</span>');
+
+  result = result.replace(/\x00STR(\d+)\x00/g, (_m, idx) => strings[parseInt(idx)]);
+  return result;
+}
+
+interface PythonBlockProps {
+  code: string;
+}
+
+function PythonBlock({ code }: PythonBlockProps) {
+  const [showPlayground, setShowPlayground] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-4 rounded-card border border-sand/15 bg-[#0d1117] overflow-hidden">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-sand/5 border-b border-sand/10">
+        <span className="text-xs font-mono text-amber-400/50 uppercase tracking-widest">Python</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopy}
+            className="text-xs font-mono text-sand/40 hover:text-sand transition-colors px-2 py-1 rounded hover:bg-sand/10"
+          >
+            {copied ? "Copiato!" : "Copia"}
+          </button>
+          <button
+            onClick={() => setShowPlayground((v) => !v)}
+            className="text-xs font-mono text-amber-400 hover:text-amber-300 transition-colors px-2 py-1 rounded hover:bg-amber-400/10 border border-amber-400/20"
+          >
+            {showPlayground ? "Chiudi" : "Prova →"}
+          </button>
+        </div>
+      </div>
+
+      {/* Code */}
+      <pre
+        className="p-4 overflow-x-auto text-sm leading-relaxed font-mono"
+        dangerouslySetInnerHTML={{ __html: highlightPython(code) }}
+      />
+
+      {/* Playground */}
+      {showPlayground && (
+        <div className="border-t border-sand/10">
+          <PythonPlayground initialCode={code} />
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface ExerciseBlockProps {
@@ -205,24 +303,32 @@ export function InteractiveContent({ html }: InteractiveContentProps) {
       component: React.ReactNode;
     }> = [];
 
-    // --- Process SQL code blocks ---
-    const codeBlocks = body.querySelectorAll("pre code.language-sql, pre code");
+    // --- Process SQL and Python code blocks ---
+    const codeBlocks = body.querySelectorAll("pre code.language-sql, pre code.language-python, pre code");
     codeBlocks.forEach((codeEl, idx) => {
-      const isSql =
-        codeEl.className.includes("language-sql") ||
-        codeEl.className.includes("language-SQL");
+      const cls = codeEl.className ?? "";
+      const isSql = cls.includes("language-sql") || cls.includes("language-SQL");
+      const isPython = cls.includes("language-python") || cls.includes("language-Python");
       const pre = codeEl.parentElement;
       if (!pre || pre.tagName !== "PRE") return;
 
-      // Only wrap SQL blocks with playground
-      if (isSql || detectSql(codeEl.textContent ?? "")) {
-        const code = codeEl.textContent ?? "";
+      const code = codeEl.textContent ?? "";
+
+      if (isSql || (!isPython && detectSql(code))) {
         const placeholder = doc.createElement("div");
         placeholder.setAttribute("data-react-id", `sql-${idx}`);
         pre.replaceWith(placeholder);
         mountPoints.push({
           placeholder,
           component: <SqlBlock code={code} />,
+        });
+      } else if (isPython || detectPython(code)) {
+        const placeholder = doc.createElement("div");
+        placeholder.setAttribute("data-react-id", `python-${idx}`);
+        pre.replaceWith(placeholder);
+        mountPoints.push({
+          placeholder,
+          component: <PythonBlock code={code} />,
         });
       }
     });
@@ -358,6 +464,12 @@ export function InteractiveContent({ html }: InteractiveContentProps) {
         .sql-keyword { color: #79c0ff; font-weight: 600; }
         .sql-string { color: #a5d6a7; }
         .sql-comment { color: rgba(232,220,200,0.35); font-style: italic; }
+        /* Python syntax highlight */
+        .py-keyword { color: #ff7b72; font-weight: 600; }
+        .py-builtin { color: #d2a8ff; }
+        .py-string { color: #a5d6a7; }
+        .py-comment { color: rgba(232,220,200,0.35); font-style: italic; }
+        .py-number { color: #f8c555; }
       `}</style>
       <article
         ref={containerRef}
@@ -372,4 +484,10 @@ export function InteractiveContent({ html }: InteractiveContentProps) {
 function detectSql(code: string): boolean {
   const sqlPattern = /\b(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|FROM|WHERE|JOIN)\b/i;
   return sqlPattern.test(code);
+}
+
+/** Heuristic: does this code block look like Python? */
+function detectPython(code: string): boolean {
+  const pyPattern = /\b(def |import |from |print\(|class |elif |for .* in |while |try:|except |lambda |None|True|False)\b/;
+  return pyPattern.test(code);
 }
