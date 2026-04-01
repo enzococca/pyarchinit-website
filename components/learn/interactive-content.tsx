@@ -134,7 +134,7 @@ function PythonBlock({ code }: PythonBlockProps) {
             onClick={() => setShowPlayground((v) => !v)}
             className="text-xs font-mono text-amber-400 hover:text-amber-300 transition-colors px-2 py-1 rounded hover:bg-amber-400/10 border border-amber-400/20"
           >
-            {showPlayground ? "Chiudi" : "Prova →"}
+            {showPlayground ? "Chiudi" : "▶ Esegui nel browser"}
           </button>
         </div>
       </div>

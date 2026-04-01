@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookMarked, RefreshCw, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { BookMarked, RefreshCw, ExternalLink, Eye, EyeOff, Euro } from "lucide-react";
 
 interface CourseData {
   id: string;
@@ -12,6 +12,7 @@ interface CourseData {
   category: string;
   difficulty: string;
   published: boolean;
+  price: number;
   createdAt: string;
   moduleCount: number;
   lessonCount: number;
@@ -40,6 +41,9 @@ export function AdminImparaClient({ courses: initialCourses }: AdminImparaClient
   const [importResult, setImportResult] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [priceInput, setPriceInput] = useState<string>("");
+  const [savingPriceId, setSavingPriceId] = useState<string | null>(null);
   const router = useRouter();
 
   const handleTogglePublish = async (course: CourseData) => {
@@ -59,6 +63,33 @@ export function AdminImparaClient({ courses: initialCourses }: AdminImparaClient
       // ignore
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  const handleStartEditPrice = (course: CourseData) => {
+    setEditingPriceId(course.id);
+    setPriceInput(course.price === 0 ? "" : String(course.price));
+  };
+
+  const handleSavePrice = async (course: CourseData) => {
+    const newPrice = parseFloat(priceInput) || 0;
+    setSavingPriceId(course.id);
+    try {
+      const res = await fetch("/api/learn/courses", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: course.id, price: newPrice }),
+      });
+      if (res.ok) {
+        setCourses((prev) =>
+          prev.map((c) => (c.id === course.id ? { ...c, price: newPrice } : c))
+        );
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSavingPriceId(null);
+      setEditingPriceId(null);
     }
   };
 
@@ -141,6 +172,9 @@ export function AdminImparaClient({ courses: initialCourses }: AdminImparaClient
                 <th className="text-left px-4 py-3 text-xs font-mono text-teal/60 uppercase tracking-widest hidden lg:table-cell">
                   Lezioni
                 </th>
+                <th className="text-left px-4 py-3 text-xs font-mono text-teal/60 uppercase tracking-widest hidden xl:table-cell">
+                  Prezzo
+                </th>
                 <th className="text-left px-4 py-3 text-xs font-mono text-teal/60 uppercase tracking-widest">
                   Stato
                 </th>
@@ -171,6 +205,52 @@ export function AdminImparaClient({ courses: initialCourses }: AdminImparaClient
                     <span className="text-xs text-sand/40 font-mono">
                       {course.moduleCount} moduli · {course.lessonCount} lezioni · {course.labCount} lab
                     </span>
+                  </td>
+                  <td className="px-4 py-4 hidden xl:table-cell">
+                    {editingPriceId === course.id ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-sand/40 font-mono">€</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={priceInput}
+                          onChange={(e) => setPriceInput(e.target.value)}
+                          className="w-20 bg-sand/5 border border-sand/20 rounded px-2 py-0.5 text-xs font-mono text-sand focus:outline-none focus:border-teal/40"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSavePrice(course);
+                            if (e.key === "Escape") setEditingPriceId(null);
+                          }}
+                        />
+                        <button
+                          onClick={() => handleSavePrice(course)}
+                          disabled={savingPriceId === course.id}
+                          className="text-xs text-teal hover:text-teal/80 font-mono disabled:opacity-50"
+                        >
+                          {savingPriceId === course.id ? "..." : "✓"}
+                        </button>
+                        <button
+                          onClick={() => setEditingPriceId(null)}
+                          className="text-xs text-sand/30 hover:text-sand/60 font-mono"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleStartEditPrice(course)}
+                        className="flex items-center gap-1 text-xs font-mono text-sand/40 hover:text-sand transition-colors group"
+                        title="Modifica prezzo"
+                      >
+                        <Euro size={11} className="text-amber-400/50 group-hover:text-amber-400 transition-colors" />
+                        {course.price === 0 ? (
+                          <span className="text-teal/50">Gratuito</span>
+                        ) : (
+                          <span>€{course.price.toFixed(2)}</span>
+                        )}
+                      </button>
+                    )}
                   </td>
                   <td className="px-4 py-4">
                     <span

@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -8,6 +8,7 @@ import { getSession } from "@/lib/auth-utils";
 import { LearnSidebar } from "@/components/learn/learn-sidebar";
 import { InteractiveContent } from "@/components/learn/interactive-content";
 import { LessonProgressButton } from "@/components/learn/lesson-progress-button";
+import { hasCoursePaid } from "@/lib/course-access";
 
 interface Props {
   params: { slug: string; lessonSlug: string };
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LessonPage({ params }: Props) {
   const session = await getSession();
-  const userId = session?.user ? (session.user as any).id as string : null;
+  const userId = session?.user ? (session.user as { id?: string }).id ?? null : null;
 
   // Load lesson with module and course
   const lesson = await prisma.interactiveLesson.findUnique({
@@ -58,11 +59,24 @@ export default async function LessonPage({ params }: Props) {
 
   const course = lesson.module.course;
 
+  // Access check — redirect to course page with paywall if no access
+  const isPaid = course.price > 0;
+  if (isPaid) {
+    if (!userId) {
+      redirect(`/impara/${course.slug}`);
+    }
+    const access = await hasCoursePaid(userId, course.slug);
+    if (!access) {
+      redirect(`/impara/${course.slug}`);
+    }
+  }
+
   // Build flat lesson list for prev/next
   const allLessons = course.modules.flatMap((m) => m.lessons);
   const currentIndex = allLessons.findIndex((l) => l.slug === params.lessonSlug);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+  const nextLesson =
+    currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   // User progress
   const lessonIds = allLessons.map((l) => l.id);

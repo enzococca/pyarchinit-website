@@ -52,15 +52,19 @@ export async function PATCH(req: NextRequest) {
   await requireAdmin();
 
   const body = await req.json();
-  const { id, published } = body;
+  const { id, published, price } = body;
 
   if (!id) {
     return NextResponse.json({ error: "id obbligatorio" }, { status: 400 });
   }
 
+  const updateData: { published?: boolean; price?: number } = {};
+  if (published !== undefined) updateData.published = published;
+  if (price !== undefined) updateData.price = Math.max(0, Number(price));
+
   const course = await prisma.interactiveCourse.update({
     where: { id },
-    data: { published },
+    data: updateData,
   });
 
   return NextResponse.json(course);

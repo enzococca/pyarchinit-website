@@ -25,6 +25,7 @@ model User {
   forumThreads  ForumThread[]
   forumReplies  ForumReply[]
   interactiveProgress InteractiveLessonProgress[]
+  coursePayments CoursePayment[]
 }
 
 enum UserRole {
@@ -366,10 +367,12 @@ model InteractiveCourse {
   imageUrl    String?
   published   Boolean @default(false)
   order       Int @default(0)
+  price       Float @default(0) // 0 = free
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   modules InteractiveModule[]
+  coursePayments CoursePayment[]
 }
 
 model InteractiveModule {
@@ -444,6 +447,26 @@ model Video {
   published   Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ============ COURSE PAYMENTS ============
+
+model CoursePayment {
+  id         String   @id @default(cuid())
+  userId     String
+  courseSlug String
+  amount     Float
+  currency   String   @default("EUR")
+  provider   String   // "paypal" or "stripe"
+  providerId String?  // PayPal/Stripe transaction ID
+  status     String   @default("pending") // pending, completed, refunded
+  createdAt  DateTime @default(now())
+
+  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course InteractiveCourse @relation(fields: [courseSlug], references: [slug], onDelete: Cascade)
+
+  @@unique([userId, courseSlug])
+  @@index([userId])
 }
 
 // ============ ANALYTICS ============

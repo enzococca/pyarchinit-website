@@ -24,6 +24,7 @@ export default async function AdminImparaPage() {
     category: c.category,
     difficulty: c.difficulty,
     published: c.published,
+    price: c.price,
     createdAt: c.createdAt.toISOString(),
     moduleCount: c.modules.length,
     lessonCount: c.modules.reduce((acc, m) => acc + m.lessons.length, 0),

@@ -1,363 +1,395 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Play, Trash2, Plus, Loader2, Terminal } from "lucide-react";
 
-interface PythonPlaygroundProps {
+// Pyodide types
+declare global {
+  interface Window {
+    loadPyodide: (config: { indexURL: string }) => Promise<PyodideInterface>;
+  }
+}
+
+interface PyodideInterface {
+  runPython: (code: string) => unknown;
+  runPythonAsync: (code: string) => Promise<unknown>;
+  globals: {
+    get: (name: string) => unknown;
+  };
+}
+
+// Module-level singleton so Pyodide is shared across all playground instances
+let pyodideInstance: PyodideInterface | null = null;
+let pyodideLoadPromise: Promise<PyodideInterface> | null = null;
+
+async function getPyodide(): Promise<PyodideInterface> {
+  if (pyodideInstance) return pyodideInstance;
+
+  if (pyodideLoadPromise) return pyodideLoadPromise;
+
+  pyodideLoadPromise = (async () => {
+    // Inject script tag if not already present
+    if (!window.loadPyodide) {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js";
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load Pyodide script"));
+        document.head.appendChild(script);
+      });
+    }
+
+    const pyodide = await window.loadPyodide({
+      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/",
+    });
+
+    // Redirect stdout/stderr to our capture object
+    pyodide.runPython(`
+import sys
+from io import StringIO
+
+class _Capture:
+    def __init__(self):
+        self._buf = []
+    def write(self, text):
+        self._buf.append(text)
+    def flush(self):
+        pass
+    def getvalue(self):
+        return ''.join(self._buf)
+    def clear(self):
+        self._buf = []
+
+_stdout_cap = _Capture()
+_stderr_cap = _Capture()
+sys.stdout = _stdout_cap
+sys.stderr = _stderr_cap
+`);
+
+    pyodideInstance = pyodide;
+    return pyodide;
+  })();
+
+  return pyodideLoadPromise;
+}
+
+interface Cell {
+  id: string;
+  code: string;
+  output: string;
+  error: string;
+  running: boolean;
+  executionCount: number | null;
+}
+
+let globalExecCounter = 0;
+
+function makeCell(code = ""): Cell {
+  return {
+    id: Math.random().toString(36).slice(2),
+    code,
+    output: "",
+    error: "",
+    running: false,
+    executionCount: null,
+  };
+}
+
+export interface PythonPlaygroundProps {
   initialCode?: string;
 }
 
-interface ExecResult {
-  success: boolean;
-  output: string[];
-}
-
-/** Parse simple Python code and simulate output */
-function simulatePython(code: string): ExecResult {
-  if (!code.trim()) {
-    return { success: false, output: ["Scrivi del codice Python..."] };
-  }
-
-  const lines = code.split("\n");
-  const output: string[] = [];
-  let hasError = false;
-
-  // Track defined variables (simple)
-  const variables: Record<string, string> = {};
-  const defined_functions: string[] = [];
-  const imported_modules: string[] = [];
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-
-    // Skip empty lines and comments
-    if (!line || line.startsWith("#")) continue;
-
-    // Import statement
-    if (/^(?:import|from)\s+(\w+)/.test(line)) {
-      const m = line.match(/^(?:import|from)\s+(\w+)/);
-      const modName = m?.[1] ?? "modulo";
-      if (!imported_modules.includes(modName)) {
-        imported_modules.push(modName);
-        output.push(`✓ Modulo '${modName}' importato`);
-      }
-      continue;
-    }
-
-    // Function definition
-    if (/^def\s+(\w+)\s*\(/.test(line)) {
-      const m = line.match(/^def\s+(\w+)\s*\(/);
-      const fnName = m?.[1] ?? "funzione";
-      defined_functions.push(fnName);
-      output.push(`✓ Funzione '${fnName}' definita`);
-      continue;
-    }
-
-    // Class definition
-    if (/^class\s+(\w+)/.test(line)) {
-      const m = line.match(/^class\s+(\w+)/);
-      output.push(`✓ Classe '${m?.[1] ?? "Classe"}' definita`);
-      continue;
-    }
-
-    // Variable assignment
-    if (/^([a-zA-Z_]\w*)\s*=\s*(.+)$/.test(line) && !line.startsWith("if ") && !line.startsWith("while ")) {
-      const m = line.match(/^([a-zA-Z_]\w*)\s*=\s*(.+)$/);
-      if (m) {
-        const varName = m[1];
-        const valExpr = m[2].trim();
-
-        // Evaluate simple literals
-        let displayVal = valExpr;
-        if (/^["'](.*)["']$/.test(valExpr)) {
-          displayVal = valExpr.replace(/^["']|["']$/g, "");
-        } else if (/^\d+(\.\d+)?$/.test(valExpr)) {
-          displayVal = valExpr;
-        } else if (/^\[/.test(valExpr)) {
-          displayVal = valExpr;
-        } else if (/^\{/.test(valExpr)) {
-          displayVal = valExpr;
-        }
-        variables[varName] = displayVal;
-        output.push(`  ${varName} = ${displayVal}`);
-      }
-      continue;
-    }
-
-    // print() call — handle various forms
-    if (/^print\s*\(/.test(line)) {
-      const printed = parsePrint(line, variables);
-      output.push(printed);
-      continue;
-    }
-
-    // For loop
-    if (/^for\s+\w+\s+in\s+/.test(line)) {
-      output.push(`→ Esecuzione ciclo for...`);
-      continue;
-    }
-
-    // If statement
-    if (/^if\s+/.test(line)) {
-      output.push(`→ Valutazione condizione if...`);
-      continue;
-    }
-
-    // Try/except
-    if (line === "try:") {
-      output.push(`→ Esecuzione blocco try...`);
-      continue;
-    }
-
-    // Return
-    if (/^return\s+/.test(line)) {
-      const val = line.replace(/^return\s+/, "");
-      output.push(`  → return ${val}`);
-      continue;
-    }
-
-    // Method calls (layer., qgs., iface., etc.)
-    if (/^(?:layer|qgs|iface|canvas|vlayer|rlayer|result)\s*[.=]/.test(line)) {
-      output.push(`  ✓ Operazione PyQGIS eseguita`);
-      continue;
-    }
-
-    // Generic expression or function call
-    if (/\w+\s*\(/.test(line)) {
-      const m = line.match(/^(\w+)\s*\(/);
-      const fnName = m?.[1] ?? "";
-      if (defined_functions.includes(fnName)) {
-        output.push(`  ✓ ${fnName}() chiamata`);
-      } else {
-        output.push(`  ✓ Istruzione eseguita`);
-      }
-      continue;
-    }
-  }
-
-  if (output.length === 0) {
-    output.push("Codice eseguito con successo!");
-  }
-
-  return { success: !hasError, output };
-}
-
-/** Parse a print() call and extract the string to display */
-function parsePrint(line: string, variables: Record<string, string>): string {
-  // Extract content between outermost parentheses
-  const inner = line.replace(/^print\s*\(/, "").replace(/\)\s*$/, "");
-
-  // f-string: f"text {var} more"
-  const fstringMatch = inner.match(/^f["'](.*)["']$/);
-  if (fstringMatch) {
-    let text = fstringMatch[1];
-    // Replace {varname} with variable values
-    text = text.replace(/\{([^}]+)\}/g, (_m, expr) => {
-      const varName = expr.trim();
-      return variables[varName] ?? `{${varName}}`;
-    });
-    return text;
-  }
-
-  // Simple string
-  const strMatch = inner.match(/^["'](.*)["']$/);
-  if (strMatch) return strMatch[1];
-
-  // Concatenation: "text" + var or var + "text"
-  if (inner.includes("+")) {
-    const parts = inner.split("+").map((p) => {
-      const pt = p.trim();
-      if (/^["'](.*)["']$/.test(pt)) return pt.replace(/^["']|["']$/g, "");
-      if (variables[pt]) return variables[pt];
-      return pt;
-    });
-    return parts.join("");
-  }
-
-  // Just a variable
-  if (variables[inner.trim()]) return variables[inner.trim()];
-
-  // Multiple args separated by comma
-  if (inner.includes(",")) {
-    const parts = inner.split(",").map((p) => {
-      const pt = p.trim();
-      if (/^["'](.*)["']$/.test(pt)) return pt.replace(/^["']|["']$/g, "");
-      if (variables[pt]) return variables[pt];
-      return pt;
-    });
-    return parts.join(" ");
-  }
-
-  return inner;
-}
-
-/** Syntax-highlight Python code for display */
-function highlightPython(code: string): string {
-  const keywords = [
-    "False", "None", "True", "and", "as", "assert", "async", "await",
-    "break", "class", "continue", "def", "del", "elif", "else", "except",
-    "finally", "for", "from", "global", "if", "import", "in", "is",
-    "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try",
-    "while", "with", "yield",
-  ];
-
-  const builtins = [
-    "print", "len", "range", "int", "float", "str", "list", "dict",
-    "tuple", "set", "bool", "type", "isinstance", "enumerate", "zip",
-    "map", "filter", "sorted", "reversed", "open", "sum", "min", "max",
-    "abs", "round", "input", "super", "self",
-  ];
-
-  // Escape HTML
-  let result = code
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  // Protect strings (single and double quotes)
-  const strings: string[] = [];
-  // Double-quoted strings
-  result = result.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (_m, s) => {
-    const idx = strings.length;
-    strings.push(`<span class="py-string">"${s}"</span>`);
-    return `\x00STR${idx}\x00`;
-  });
-  // Single-quoted strings
-  result = result.replace(/'([^'\\]*(\\.[^'\\]*)*)'/g, (_m, s) => {
-    const idx = strings.length;
-    strings.push(`<span class="py-string">'${s}'</span>`);
-    return `\x00STR${idx}\x00`;
-  });
-
-  // Comments
-  result = result.replace(/(#[^\n]*)/g, '<span class="py-comment">$1</span>');
-
-  // Numbers
-  result = result.replace(/\b(\d+\.?\d*)\b/g, '<span class="py-number">$1</span>');
-
-  // Keywords
-  const kwRe = new RegExp(`\\b(${keywords.join("|")})\\b`, "g");
-  result = result.replace(kwRe, '<span class="py-keyword">$1</span>');
-
-  // Built-ins
-  const builtinRe = new RegExp(`\\b(${builtins.join("|")})\\b`, "g");
-  result = result.replace(builtinRe, '<span class="py-builtin">$1</span>');
-
-  // Restore strings
-  result = result.replace(/\x00STR(\d+)\x00/g, (_m, idx) => strings[parseInt(idx)]);
-
-  return result;
-}
-
 export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
-  const [code, setCode] = useState(initialCode);
-  const [result, setResult] = useState<ExecResult | null>(null);
-  const [running, setRunning] = useState(false);
+  const [cells, setCells] = useState<Cell[]>(() => [makeCell(initialCode)]);
+  const [pyodideStatus, setPyodideStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [pyodideError, setPyodideError] = useState<string>("");
+  const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
-  const handleRun = () => {
-    setRunning(true);
-    setTimeout(() => {
-      setResult(simulatePython(code));
-      setRunning(false);
-    }, 350);
-  };
+  // Auto-resize textarea helper
+  const autoResize = useCallback((el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      handleRun();
+  const ensurePyodide = useCallback(async () => {
+    if (pyodideStatus === "ready") return true;
+    if (pyodideStatus === "loading") {
+      // Wait for it
+      try {
+        await getPyodide();
+        return true;
+      } catch {
+        return false;
+      }
     }
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const target = e.target as HTMLTextAreaElement;
-      const start = target.selectionStart;
-      const end = target.selectionEnd;
-      const newVal = code.substring(0, start) + "    " + code.substring(end);
-      setCode(newVal);
-      requestAnimationFrame(() => {
-        target.selectionStart = target.selectionEnd = start + 4;
-      });
+    setPyodideStatus("loading");
+    try {
+      await getPyodide();
+      setPyodideStatus("ready");
+      return true;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setPyodideError(msg);
+      setPyodideStatus("error");
+      return false;
     }
-  };
+  }, [pyodideStatus]);
+
+  // Sync status once Pyodide is already loaded (e.g. second instance)
+  useEffect(() => {
+    if (pyodideInstance) setPyodideStatus("ready");
+  }, []);
+
+  const runCell = useCallback(
+    async (cellId: string) => {
+      const ready = await ensurePyodide();
+      if (!ready) return;
+
+      setCells((prev) =>
+        prev.map((c) =>
+          c.id === cellId ? { ...c, running: true, output: "", error: "" } : c
+        )
+      );
+
+      try {
+        const pyodide = await getPyodide();
+
+        // Clear capture buffers
+        pyodide.runPython(`_stdout_cap.clear(); _stderr_cap.clear()`);
+
+        const cell = cells.find((c) => c.id === cellId);
+        if (!cell) return;
+
+        let returnVal: unknown = undefined;
+        let execError = "";
+        try {
+          returnVal = await pyodide.runPythonAsync(cell.code);
+        } catch (e: unknown) {
+          execError = e instanceof Error ? e.message : String(e);
+        }
+
+        const stdout = String(
+          (pyodide.globals.get("_stdout_cap") as { getvalue: () => string }).getvalue()
+        );
+        const stderr = String(
+          (pyodide.globals.get("_stderr_cap") as { getvalue: () => string }).getvalue()
+        );
+
+        globalExecCounter += 1;
+        const count = globalExecCounter;
+
+        // Build output string
+        let outputStr = stdout;
+        if (stderr) outputStr += (outputStr ? "\n" : "") + stderr;
+        if (
+          returnVal !== undefined &&
+          returnVal !== null &&
+          String(returnVal) !== "undefined"
+        ) {
+          // Avoid printing None (Pyodide returns null for None)
+          if (returnVal !== null) {
+            outputStr += (outputStr ? "\n" : "") + String(returnVal);
+          }
+        }
+
+        setCells((prev) =>
+          prev.map((c) =>
+            c.id === cellId
+              ? {
+                  ...c,
+                  running: false,
+                  output: outputStr,
+                  error: execError,
+                  executionCount: count,
+                }
+              : c
+          )
+        );
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setCells((prev) =>
+          prev.map((c) =>
+            c.id === cellId
+              ? { ...c, running: false, error: msg }
+              : c
+          )
+        );
+      }
+    },
+    [cells, ensurePyodide]
+  );
+
+  const addCell = useCallback(() => {
+    setCells((prev) => [...prev, makeCell()]);
+  }, []);
+
+  const clearCell = useCallback((cellId: string) => {
+    setCells((prev) =>
+      prev.map((c) =>
+        c.id === cellId ? { ...c, output: "", error: "", executionCount: null } : c
+      )
+    );
+  }, []);
+
+  const updateCellCode = useCallback((cellId: string, code: string) => {
+    setCells((prev) =>
+      prev.map((c) => (c.id === cellId ? { ...c, code } : c))
+    );
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>, cellId: string) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        runCell(cellId);
+      }
+      if (e.key === "Tab") {
+        e.preventDefault();
+        const target = e.target as HTMLTextAreaElement;
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        const cell = cells.find((c) => c.id === cellId);
+        if (!cell) return;
+        const newCode =
+          cell.code.substring(0, start) + "    " + cell.code.substring(end);
+        updateCellCode(cellId, newCode);
+        requestAnimationFrame(() => {
+          target.selectionStart = target.selectionEnd = start + 4;
+        });
+      }
+    },
+    [cells, runCell, updateCellCode]
+  );
 
   return (
-    <div className="bg-[#0a0f1a] p-4">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="bg-[#0a0f1a] p-4 space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Terminal size={14} className="text-amber-400/60" />
         <span className="text-xs font-mono text-amber-400/60 uppercase tracking-widest">
-          Python Playground
+          Python (Pyodide)
         </span>
-        <span className="text-xs text-sand/20 font-mono">(simulato)</span>
+        {pyodideStatus === "loading" && (
+          <span className="flex items-center gap-1.5 text-xs text-sand/40 font-mono ml-2">
+            <Loader2 size={11} className="animate-spin" />
+            Caricamento Python (~10MB)...
+          </span>
+        )}
+        {pyodideStatus === "ready" && (
+          <span className="text-xs text-teal/60 font-mono ml-2">
+            ● Pronto
+          </span>
+        )}
+        {pyodideStatus === "error" && (
+          <span className="text-xs text-red-400/80 font-mono ml-2 truncate max-w-xs">
+            Errore: {pyodideError}
+          </span>
+        )}
         <span className="ml-auto text-xs text-sand/20 font-mono hidden sm:inline">
           Ctrl+Enter per eseguire
         </span>
       </div>
 
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="w-full h-36 bg-[#0d1117] border border-sand/15 rounded-lg px-4 py-3 text-sm font-mono text-sand/80 focus:outline-none focus:border-amber-400/40 resize-y placeholder:text-sand/20"
-        placeholder="Scrivi il tuo codice Python..."
-        spellCheck={false}
-      />
-
-      <div className="flex items-center gap-3 mt-2">
-        <button
-          onClick={handleRun}
-          disabled={running || !code.trim()}
-          className="flex items-center gap-2 bg-amber-500 text-[#0a0f1a] font-mono text-xs font-bold px-4 py-2 rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      {/* Cells */}
+      {cells.map((cell, idx) => (
+        <div
+          key={cell.id}
+          className="border border-sand/15 rounded-lg overflow-hidden"
         >
-          {running ? (
-            <>
-              <span className="animate-spin inline-block w-3 h-3 border-2 border-[#0a0f1a]/30 border-t-[#0a0f1a] rounded-full" />
-              Eseguendo...
-            </>
-          ) : (
-            <>▶ Esegui</>
-          )}
-        </button>
-        {result && (
-          <button
-            onClick={() => setResult(null)}
-            className="text-xs font-mono text-sand/30 hover:text-sand/60 transition-colors"
-          >
-            Pulisci
-          </button>
-        )}
-      </div>
-
-      {/* Output */}
-      {result && (
-        <div className="mt-3">
-          <div className="text-xs font-mono text-sand/30 uppercase tracking-widest mb-1 px-1">
-            Output
-          </div>
-          <div
-            className={`rounded-lg border font-mono text-sm p-3 space-y-0.5 ${
-              result.success
-                ? "bg-[#0d1117] border-amber-500/20"
-                : "bg-terracotta/5 border-terracotta/20"
-            }`}
-          >
-            {result.output.length === 0 ? (
-              <span className="text-sand/30">// nessun output</span>
-            ) : (
-              result.output.map((line, i) => (
-                <div
-                  key={i}
-                  className={
-                    line.startsWith("✓") || line.startsWith("→")
-                      ? "text-amber-400/70"
-                      : line.startsWith("  ")
-                      ? "text-teal/80 pl-2"
-                      : "text-sand/80"
-                  }
-                >
-                  {line}
-                </div>
-              ))
+          {/* Cell toolbar */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-sand/5 border-b border-sand/10">
+            <span className="text-xs font-mono text-sand/30 w-16">
+              {cell.executionCount !== null
+                ? `In [${cell.executionCount}]:`
+                : `In [${idx + 1}]:`}
+            </span>
+            <div className="flex-1" />
+            {(cell.output || cell.error) && (
+              <button
+                onClick={() => clearCell(cell.id)}
+                className="flex items-center gap-1 text-xs font-mono text-sand/30 hover:text-sand/60 transition-colors px-1.5 py-0.5 rounded hover:bg-sand/10"
+                title="Pulisci output"
+              >
+                <Trash2 size={11} />
+                Pulisci
+              </button>
             )}
+            <button
+              onClick={() => runCell(cell.id)}
+              disabled={cell.running || pyodideStatus === "error"}
+              className="flex items-center gap-1.5 bg-amber-500 text-[#0a0f1a] font-mono text-xs font-bold px-3 py-1 rounded hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {cell.running ? (
+                <>
+                  <Loader2 size={11} className="animate-spin" />
+                  Eseguendo...
+                </>
+              ) : (
+                <>
+                  <Play size={11} />
+                  Esegui
+                </>
+              )}
+            </button>
           </div>
+
+          {/* Code textarea */}
+          <textarea
+            ref={(el) => {
+              textareaRefs.current[cell.id] = el;
+              if (el) autoResize(el);
+            }}
+            value={cell.code}
+            onChange={(e) => {
+              updateCellCode(cell.id, e.target.value);
+              autoResize(e.target);
+            }}
+            onKeyDown={(e) => handleKeyDown(e, cell.id)}
+            className="w-full min-h-[80px] bg-[#0d1117] px-4 py-3 text-sm font-mono text-sand/80 focus:outline-none resize-none placeholder:text-sand/20"
+            placeholder="Scrivi il tuo codice Python..."
+            spellCheck={false}
+            style={{ overflow: "hidden" }}
+          />
+
+          {/* Output */}
+          {(cell.output || cell.error) && (
+            <div className="border-t border-sand/10">
+              <div className="px-3 py-1.5 bg-sand/3 border-b border-sand/8">
+                <span className="text-xs font-mono text-sand/30">
+                  {cell.executionCount !== null
+                    ? `Out [${cell.executionCount}]:`
+                    : "Output:"}
+                </span>
+              </div>
+              <div className="bg-[#0d1117] px-4 py-3 font-mono text-sm">
+                {cell.error ? (
+                  <pre className="text-red-400 whitespace-pre-wrap text-xs leading-relaxed">
+                    {cell.error}
+                  </pre>
+                ) : cell.output ? (
+                  <pre className="text-sand/80 whitespace-pre-wrap text-xs leading-relaxed">
+                    {cell.output}
+                  </pre>
+                ) : (
+                  <span className="text-sand/30 text-xs">// nessun output</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      ))}
+
+      {/* Add cell */}
+      <button
+        onClick={addCell}
+        className="flex items-center gap-2 text-xs font-mono text-sand/30 hover:text-sand/60 transition-colors border border-dashed border-sand/15 hover:border-sand/30 rounded-lg px-4 py-2 w-full justify-center"
+      >
+        <Plus size={12} />
+        Aggiungi cella
+      </button>
     </div>
   );
 }
