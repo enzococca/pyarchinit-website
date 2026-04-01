@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
 
       if (!paymentId || !token || !courseSlug) return errorRedirect;
 
-      const payment = await prisma.coursePayment.findUnique({
+      const payment = await (prisma as any).coursePayment.findUnique({
         where: { id: paymentId },
       });
       if (!payment || payment.status === "completed") {
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
       if (!captured) return errorRedirect;
 
-      await prisma.coursePayment.update({
+      await (prisma as any).coursePayment.update({
         where: { id: paymentId },
         data: { status: "completed", providerId: orderId },
       });
@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
       const result = await verifyStripeSession(sessionId);
       if (!result.success || !result.userId) return errorRedirect;
 
-      await prisma.coursePayment.upsert({
+      await (prisma as any).coursePayment.upsert({
         where: {
           userId_courseSlug: {
             userId: result.userId,

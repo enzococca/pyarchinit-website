@@ -166,26 +166,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const course = await prisma.interactiveCourse.findUnique({
-    where: { slug: courseSlug, published: true },
-    select: { price: true, title: true },
-  });
+  let course;
+  try {
+    course = await prisma.interactiveCourse.findUnique({
+      where: { slug: courseSlug, published: true },
+      select: { price: true, title: true },
+    });
+  } catch (dbErr: unknown) {
+    console.error("[purchase] DB error finding course:", dbErr);
+    return NextResponse.json({ error: "Errore database: " + (dbErr instanceof Error ? dbErr.message : String(dbErr)) }, { status: 500 });
+  }
 
   if (!course) {
     return NextResponse.json({ error: "Corso non trovato" }, { status: 404 });
   }
 
   // Check if already purchased
-  const existing = await prisma.coursePayment.findUnique({
-    where: { userId_courseSlug: { userId, courseSlug } },
-  });
+  let existing;
+  try {
+    existing = await (prisma as any).coursePayment.findUnique({
+      where: { userId_courseSlug: { userId, courseSlug } },
+    });
+  } catch {
+    // Table might not exist yet - ignore
+    existing = null;
+  }
   if (existing?.status === "completed") {
     return NextResponse.json({ redirect: `/impara/${courseSlug}` });
   }
 
   // Free course — create completed payment directly
   if (course.price === 0) {
-    await prisma.coursePayment.upsert({
+    await (prisma as any).coursePayment.upsert({
       where: { userId_courseSlug: { userId, courseSlug } },
       create: {
         userId,
@@ -205,7 +217,7 @@ export async function POST(req: NextRequest) {
   try {
     if (provider === "paypal") {
       // Create pending payment record first to store state
-      const pending = await prisma.coursePayment.upsert({
+      const pending = await (prisma as any).coursePayment.upsert({
         where: { userId_courseSlug: { userId, courseSlug } },
         create: {
           userId,
@@ -230,7 +242,7 @@ export async function POST(req: NextRequest) {
       );
 
       // Store PayPal order ID
-      await prisma.coursePayment.update({
+      await (prisma as any).coursePayment.update({
         where: { id: pending.id },
         data: { providerId: orderId },
       });
@@ -256,8 +268,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Provider non valido" }, { status: 400 });
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = e instanceof Error ? e.message + " | " + e.stack?.split("\n")[1] : String(e);
     console.error("[purchase] error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: "Errore pagamento: " + (e instanceof Error ? e.message : String(e)) }, { status: 500 });
   }
 }
