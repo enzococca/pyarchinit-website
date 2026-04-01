@@ -226,7 +226,7 @@ export default async function CourseDetailPage({ params }: Props) {
                   </div>
                   {firstLesson && (
                     <Link
-                      href={`/impara/${course.slug}/${firstLesson.slug}`}
+                      href={`/lezione/${firstLesson.slug}`}
                       className="inline-flex items-center gap-2 bg-teal text-primary font-mono text-sm font-bold px-5 py-2.5 rounded-full hover:bg-teal/90 transition"
                     >
                       {completedCount > 0
@@ -264,7 +264,7 @@ export default async function CourseDetailPage({ params }: Props) {
                           return (
                             <li key={lesson.id}>
                               <Link
-                                href={`/impara/${course.slug}/${lesson.slug}`}
+                                href={`/lezione/${lesson.slug}`}
                                 className="flex items-center gap-3 px-5 py-3 hover:bg-sand/5 transition-colors group"
                               >
                                 <span className="shrink-0">

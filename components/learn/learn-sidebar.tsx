@@ -61,7 +61,7 @@ export function LearnSidebar({ course, currentLessonSlug, completedIds }: LearnS
                 return (
                   <li key={lesson.id}>
                     <Link
-                      href={`/impara/${course.slug}/${lesson.slug}`}
+                      href={`/lezione/${lesson.slug}`}
                       className={`flex items-center gap-2 text-xs py-1.5 pr-2 rounded-r-lg transition-colors ${
                         isActive
                           ? "text-teal font-medium"
