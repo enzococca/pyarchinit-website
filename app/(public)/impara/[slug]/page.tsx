@@ -151,34 +151,28 @@ export default async function CourseDetailPage({ params }: Props) {
                   Accesso riservato
                 </h2>
                 <p className="text-sand/50 text-sm mb-5">
-                  Questo corso richiede un account e il pagamento per accedere ai contenuti.
+                  Per accedere a questo corso devi effettuare il login.
                 </p>
-                <div className="flex items-center justify-center gap-3">
-                  <Link
-                    href="/login"
-                    className="bg-teal text-primary font-mono text-sm font-bold px-5 py-2.5 rounded-full hover:bg-teal/90 transition"
-                  >
-                    Accedi
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="border border-sand/20 text-sand/60 font-mono text-sm px-5 py-2.5 rounded-full hover:border-sand/40 transition"
-                  >
-                    Registrati
-                  </Link>
-                </div>
+                <Link
+                  href="/admin/login"
+                  className="bg-teal text-primary font-mono text-sm font-bold px-6 py-2.5 rounded-full hover:bg-teal/90 transition"
+                >
+                  Accedi
+                </Link>
               </div>
             )}
 
             {/* Logged in but no access + paid course */}
             {userId && isPaid && !hasAccess && (
-              <CoursePaywallClient
-                courseSlug={course.slug}
-                price={course.price}
-                moduleCount={course.modules.length}
-                lessonCount={totalLessons}
-                labCount={labCount}
-              />
+              <div className="bg-code-bg border border-amber-400/20 rounded-card p-8 mb-8 text-center">
+                <Lock size={32} className="mx-auto mb-3 text-amber-400/60" />
+                <h2 className="font-mono font-bold text-sand text-lg mb-2">
+                  Accesso non autorizzato
+                </h2>
+                <p className="text-sand/50 text-sm">
+                  Il tuo account non ha accesso a questo corso. Contattaci per informazioni.
+                </p>
+              </div>
             )}
 
             {/* Has access — show normal content */}
