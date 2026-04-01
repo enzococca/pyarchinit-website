@@ -154,7 +154,7 @@ export default async function CourseDetailPage({ params }: Props) {
                   Per accedere a questo corso devi effettuare il login.
                 </p>
                 <Link
-                  href="/admin/login"
+                  href={`/login?callbackUrl=/impara/${course.slug}`}
                   className="bg-teal text-primary font-mono text-sm font-bold px-6 py-2.5 rounded-full hover:bg-teal/90 transition"
                 >
                   Accedi
