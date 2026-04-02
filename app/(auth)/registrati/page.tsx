@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { loginStudentAction } from "./actions";
+import { registerAction } from "./actions";
 
-export default function LoginPage() {
+export default function RegistratiPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/impara";
   const [error, setError] = useState("");
@@ -20,12 +20,12 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
     formData.set("callbackUrl", callbackUrl);
 
-    const result = await loginStudentAction(formData);
+    const result = await registerAction(formData);
     if (result?.error) {
       setError(result.error);
       setLoading(false);
     }
-    // If no error, the server action redirects
+    // If no error, server action redirects
   }
 
   return (
@@ -39,22 +39,33 @@ export default function LoginPage() {
             height={56}
             className="mx-auto mb-4"
           />
-          <h1 className="text-2xl font-mono text-teal">Accedi</h1>
+          <h1 className="text-2xl font-mono text-teal">Crea un account</h1>
           <p className="text-sand/40 text-sm mt-1">
-            Inserisci le tue credenziali per accedere ai corsi
+            Unisciti alla community di pyArchInit
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-code-bg rounded-card p-6 space-y-4">
           <div>
-            <label className="block text-xs text-sand/50 mb-1.5">Username o Email</label>
+            <label className="block text-xs text-sand/50 mb-1.5">Nome</label>
             <input
-              name="email"
+              name="nome"
               type="text"
               required
-              autoComplete="username"
+              autoComplete="name"
               className="w-full bg-primary border border-ochre/30 rounded-lg px-4 py-3 text-sand placeholder:text-ochre/40 focus:border-teal focus:outline-none"
-              placeholder="username"
+              placeholder="Il tuo nome"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-sand/50 mb-1.5">Email</label>
+            <input
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="w-full bg-primary border border-ochre/30 rounded-lg px-4 py-3 text-sand placeholder:text-ochre/40 focus:border-teal focus:outline-none"
+              placeholder="tua@email.com"
             />
           </div>
           <div>
@@ -63,9 +74,22 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
+              minLength={8}
               className="w-full bg-primary border border-ochre/30 rounded-lg px-4 py-3 text-sand placeholder:text-ochre/40 focus:border-teal focus:outline-none"
-              placeholder="password"
+              placeholder="Almeno 8 caratteri"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-sand/50 mb-1.5">Conferma Password</label>
+            <input
+              name="confermaPassword"
+              type="password"
+              required
+              autoComplete="new-password"
+              minLength={8}
+              className="w-full bg-primary border border-ochre/30 rounded-lg px-4 py-3 text-sand placeholder:text-ochre/40 focus:border-teal focus:outline-none"
+              placeholder="Ripeti la password"
             />
           </div>
 
@@ -78,15 +102,15 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-teal text-primary font-mono font-bold py-3 rounded-full hover:bg-teal/90 transition disabled:opacity-50"
           >
-            {loading ? "Accesso..." : "Accedi"}
+            {loading ? "Registrazione..." : "Registrati"}
           </button>
         </form>
 
         <div className="text-center mt-6 space-y-2">
           <p className="text-sand/40 text-sm">
-            Non hai un account?{" "}
-            <Link href="/registrati" className="text-teal hover:text-teal/80 transition">
-              Registrati
+            Hai già un account?{" "}
+            <Link href="/login" className="text-teal hover:text-teal/80 transition">
+              Accedi
             </Link>
           </p>
           <Link href="/impara" className="block text-sand/30 text-xs hover:text-sand/50 transition">

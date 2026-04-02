@@ -469,6 +469,19 @@ model CoursePayment {
   @@index([userId])
 }
 
+// ============ COURSE CODES ============
+
+model CourseCode {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  courseSlug String
+  usedBy     String?
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([code])
+}
+
 // ============ ANALYTICS ============
 
 model PageView {

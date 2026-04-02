@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookMarked, RefreshCw, ExternalLink, Eye, EyeOff, Euro } from "lucide-react";
+import { BookMarked, RefreshCw, ExternalLink, Eye, EyeOff, Euro, Tag } from "lucide-react";
+import { CodesPanel } from "./codes-panel";
 
 interface CourseData {
   id: string;
@@ -37,6 +38,7 @@ const difficultyClass: Record<string, string> = {
 
 export function AdminImparaClient({ courses: initialCourses }: AdminImparaClientProps) {
   const [courses, setCourses] = useState(initialCourses);
+  const [expandedCodesSlug, setExpandedCodesSlug] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -265,6 +267,21 @@ export function AdminImparaClient({ courses: initialCourses }: AdminImparaClient
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() =>
+                          setExpandedCodesSlug((prev) =>
+                            prev === course.slug ? null : course.slug
+                          )
+                        }
+                        className={`p-1.5 transition-colors ${
+                          expandedCodesSlug === course.slug
+                            ? "text-ochre"
+                            : "text-sand/30 hover:text-ochre"
+                        }`}
+                        title="Gestisci codici"
+                      >
+                        <Tag size={14} />
+                      </button>
                       <Link
                         href={`/impara/${course.slug}`}
                         target="_blank"
@@ -291,6 +308,17 @@ export function AdminImparaClient({ courses: initialCourses }: AdminImparaClient
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Codes panel - shown below table when a course is selected */}
+      {expandedCodesSlug && (
+        <div className="mt-4">
+          {courses
+            .filter((c) => c.slug === expandedCodesSlug)
+            .map((c) => (
+              <CodesPanel key={c.slug} courseSlug={c.slug} courseTitle={c.title} />
+            ))}
         </div>
       )}
 

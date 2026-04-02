@@ -8,6 +8,7 @@ import { SmartSearchTrigger } from "@/components/public/smart-search";
 import { useSearch } from "@/components/public/search-provider";
 import { useLocale } from "@/components/public/locale-provider";
 import { LocaleSwitcher } from "@/components/public/locale-switcher";
+import { UserMenu } from "@/components/public/user-menu";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -55,14 +56,9 @@ export function Navbar() {
             <div className="flex items-center gap-3">
               <SmartSearchTrigger onClick={openSearch} />
               <LocaleSwitcher />
+              <UserMenu />
               <Link
-                href="/login"
-                className="hidden md:inline-flex items-center px-3 py-1.5 rounded-card text-xs font-mono text-sand/60 border border-sand/15 hover:border-teal/30 hover:text-teal transition-colors"
-              >
-                Login
-              </Link>
-              <Link
-                href="/login"
+                href="/corsi"
                 className="hidden md:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
               >
                 {t("nav.inizia")}

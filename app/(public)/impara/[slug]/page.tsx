@@ -9,6 +9,7 @@ import { LearnSidebar } from "@/components/learn/learn-sidebar";
 import { getServerLocale, t } from "@/lib/i18n";
 import { hasCoursePaid } from "@/lib/course-access";
 import { CoursePaywallClient } from "@/components/learn/course-paywall-client";
+import { CourseCodeInput } from "@/components/learn/course-code-input";
 
 interface Props {
   params: { slug: string };
@@ -166,14 +167,15 @@ export default async function CourseDetailPage({ params }: Props) {
 
             {/* Logged in but no access + paid course */}
             {userId && isPaid && !hasAccess && (
-              <div className="bg-code-bg border border-amber-400/20 rounded-card p-8 mb-8 text-center">
-                <Lock size={32} className="mx-auto mb-3 text-amber-400/60" />
-                <h2 className="font-mono font-bold text-sand text-lg mb-2">
-                  Accesso non autorizzato
-                </h2>
-                <p className="text-sand/50 text-sm">
-                  Il tuo account non ha accesso a questo corso. Contattaci per informazioni.
-                </p>
+              <div className="mb-8 space-y-4">
+                <CoursePaywallClient
+                  courseSlug={course.slug}
+                  price={course.price}
+                  moduleCount={course.modules.length}
+                  lessonCount={totalLessons}
+                  labCount={labCount}
+                />
+                <CourseCodeInput courseSlug={course.slug} />
               </div>
             )}
 
