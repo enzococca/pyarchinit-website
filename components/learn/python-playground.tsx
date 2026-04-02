@@ -66,6 +66,17 @@ sys.stdout = _stdout_cap
 sys.stderr = _stderr_cap
 `);
 
+    // Pre-install common scientific packages
+    try {
+      await pyodide.runPythonAsync(`
+import micropip
+await micropip.install(["numpy", "pandas", "scipy", "matplotlib"])
+print("Pacchetti scientifici installati")
+`);
+    } catch {
+      // Continue without - not all packages may be available
+    }
+
     pyodideInstance = pyodide;
     return pyodide;
   })();
@@ -83,6 +94,34 @@ interface Cell {
 }
 
 let globalExecCounter = 0;
+
+/** Detect Python imports that might need micropip installation */
+function detectImports(code: string): string[] {
+  const packages = new Set<string>();
+  const importRe = /(?:^|\n)\s*(?:import|from)\s+(\w+)/g;
+  let m;
+  while ((m = importRe.exec(code)) !== null) {
+    const pkg = m[1];
+    // Only external packages (not builtins)
+    const builtins = new Set([
+      "sys", "os", "math", "json", "csv", "re", "datetime", "time",
+      "collections", "functools", "itertools", "io", "string", "random",
+      "statistics", "pathlib", "abc", "typing", "dataclasses", "enum",
+      "copy", "operator", "textwrap", "unittest", "ast", "inspect",
+      "hashlib", "base64", "struct", "array", "bisect", "heapq",
+    ]);
+    if (!builtins.has(pkg) && !pkg.startsWith("_")) {
+      // Map common aliases
+      const pkgMap: Record<string, string> = {
+        np: "numpy", pd: "pandas", plt: "matplotlib",
+        scipy: "scipy", sklearn: "scikit-learn",
+        cv2: "opencv-python", PIL: "Pillow",
+      };
+      packages.add(pkgMap[pkg] || pkg);
+    }
+  }
+  return Array.from(packages);
+}
 
 function makeCell(code = ""): Cell {
   return {
@@ -162,6 +201,18 @@ export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
 
         const cell = cells.find((c) => c.id === cellId);
         if (!cell) return;
+
+        // Auto-install packages if code imports them
+        const importedPackages = detectImports(cell.code);
+        if (importedPackages.length > 0) {
+          try {
+            await pyodide.runPythonAsync(
+              `import micropip\nawait micropip.install([${importedPackages.map(p => `"${p}"`).join(",")}])`
+            );
+          } catch {
+            // Package might already be installed or not available - continue anyway
+          }
+        }
 
         let returnVal: unknown = undefined;
         let execError = "";
@@ -275,7 +326,7 @@ export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
         {pyodideStatus === "loading" && (
           <span className="flex items-center gap-1.5 text-xs text-sand/40 font-mono ml-2">
             <Loader2 size={11} className="animate-spin" />
-            Caricamento Python (~10MB)...
+            Caricamento Python + numpy/pandas/scipy...
           </span>
         )}
         {pyodideStatus === "ready" && (
