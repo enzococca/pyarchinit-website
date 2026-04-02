@@ -17,6 +17,13 @@ export async function hasCoursePaid(
   // Course not found or free
   if (!course || course.price === 0) return true;
 
+  // Admins always have access
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (user?.role === "ADMIN") return true;
+
   const payment = await prisma.coursePayment.findUnique({
     where: { userId_courseSlug: { userId, courseSlug } },
     select: { status: true },
