@@ -66,15 +66,19 @@ sys.stdout = _stdout_cap
 sys.stderr = _stderr_cap
 `);
 
-    // Pre-install common scientific packages
+    // Pre-install common scientific packages using loadPackage (faster, from CDN)
     try {
-      await pyodide.runPythonAsync(`
+      await (pyodide as any).loadPackage(["numpy", "matplotlib", "scipy", "pandas", "micropip"]);
+    } catch {
+      // Fallback to micropip
+      try {
+        await pyodide.runPythonAsync(`
 import micropip
 await micropip.install(["numpy", "pandas", "scipy", "matplotlib"])
-print("Pacchetti scientifici installati")
 `);
-    } catch {
-      // Continue without - not all packages may be available
+      } catch {
+        // Continue without
+      }
     }
 
     pyodideInstance = pyodide;
@@ -206,11 +210,16 @@ export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
         const importedPackages = detectImports(cell.code);
         if (importedPackages.length > 0) {
           try {
-            await pyodide.runPythonAsync(
-              `import micropip\nawait micropip.install([${importedPackages.map(p => `"${p}"`).join(",")}])`
-            );
+            await (pyodide as any).loadPackage(importedPackages);
           } catch {
-            // Package might already be installed or not available - continue anyway
+            // Fallback to micropip for packages not in Pyodide bundle
+            try {
+              await pyodide.runPythonAsync(
+                `import micropip\nawait micropip.install([${importedPackages.map(p => `"${p}"`).join(",")}])`
+              );
+            } catch {
+              // Continue anyway
+            }
           }
         }
 
