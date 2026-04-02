@@ -214,6 +214,30 @@ export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
           }
         }
 
+        // Setup matplotlib to save to base64 instead of showing
+        try {
+          await pyodide.runPythonAsync(`
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
+plt.close('all')
+_plot_data = None
+_original_show = plt.show
+def _capture_show(*args, **kwargs):
+    global _plot_data
+    import io, base64
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight',
+                facecolor='#0d1117', edgecolor='none')
+    buf.seek(0)
+    _plot_data = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close('all')
+plt.show = _capture_show
+`);
+        } catch {
+          // matplotlib might not be installed yet - ok
+        }
+
         let returnVal: unknown = undefined;
         let execError = "";
         try {
@@ -229,18 +253,32 @@ export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
           (pyodide.globals.get("_stderr_cap") as { getvalue: () => string }).getvalue()
         );
 
+        // Check for matplotlib plot output
+        let plotBase64 = "";
+        try {
+          const plotData = pyodide.globals.get("_plot_data");
+          if (plotData && String(plotData) !== "None") {
+            plotBase64 = String(plotData);
+            pyodide.runPython("_plot_data = None");
+          }
+        } catch {
+          // no plot
+        }
+
         globalExecCounter += 1;
         const count = globalExecCounter;
 
         // Build output string
         let outputStr = stdout;
         if (stderr) outputStr += (outputStr ? "\n" : "") + stderr;
+        if (plotBase64) {
+          outputStr += (outputStr ? "\n" : "") + "%%PLOT%%" + plotBase64;
+        }
         if (
           returnVal !== undefined &&
           returnVal !== null &&
           String(returnVal) !== "undefined"
         ) {
-          // Avoid printing None (Pyodide returns null for None)
           if (returnVal !== null) {
             outputStr += (outputStr ? "\n" : "") + String(returnVal);
           }
@@ -421,9 +459,35 @@ export function PythonPlayground({ initialCode = "" }: PythonPlaygroundProps) {
                     {cell.error}
                   </pre>
                 ) : cell.output ? (
-                  <pre className="text-sand/80 whitespace-pre-wrap text-xs leading-relaxed">
-                    {cell.output}
-                  </pre>
+                  <div>
+                    {cell.output.split("%%PLOT%%").map((part, idx) => {
+                      if (idx === 0) {
+                        return part ? (
+                          <pre key={idx} className="text-sand/80 whitespace-pre-wrap text-xs leading-relaxed">
+                            {part}
+                          </pre>
+                        ) : null;
+                      }
+                      // This part is a base64 PNG image
+                      const nextTextIdx = part.indexOf("\n");
+                      const imgData = nextTextIdx > 0 ? part.substring(0, nextTextIdx) : part;
+                      const remaining = nextTextIdx > 0 ? part.substring(nextTextIdx + 1) : "";
+                      return (
+                        <div key={idx}>
+                          <img
+                            src={`data:image/png;base64,${imgData}`}
+                            alt="matplotlib plot"
+                            className="max-w-full rounded-lg my-2 border border-sand/10"
+                          />
+                          {remaining && (
+                            <pre className="text-sand/80 whitespace-pre-wrap text-xs leading-relaxed">
+                              {remaining}
+                            </pre>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <span className="text-sand/30 text-xs">// nessun output</span>
                 )}
