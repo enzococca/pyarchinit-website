@@ -26,8 +26,13 @@ export async function hasCoursePaid(
 
   const payment = await prisma.coursePayment.findUnique({
     where: { userId_courseSlug: { userId, courseSlug } },
-    select: { status: true },
+    select: { status: true, expiresAt: true },
   });
 
-  return payment?.status === "completed";
+  if (!payment || payment.status !== "completed") return false;
+
+  // Check expiration
+  if (payment.expiresAt && new Date(payment.expiresAt) < new Date()) return false;
+
+  return true;
 }

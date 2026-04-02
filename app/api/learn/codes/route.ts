@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       id: c.id,
       code: c.code,
       courseSlug: c.courseSlug,
+      duration: (c as any).duration || "forever",
       available: !c.usedBy,
       usedAt: c.usedAt?.toISOString() ?? null,
       usedBy: c.usedBy ? (userMap[c.usedBy] ?? { id: c.usedBy, name: null, email: null }) : null,
@@ -57,16 +58,22 @@ export async function POST(req: NextRequest) {
 
   let courseSlug: string;
   let count: number;
+  let duration: string;
   try {
     const body = await req.json();
     courseSlug = body.courseSlug as string;
     count = Math.min(Math.max(parseInt(body.count as string) || 1, 1), 100);
+    duration = body.duration || "forever"; // "1day", "1week", "1month", "forever"
   } catch {
     return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
   }
 
   if (!courseSlug) {
     return NextResponse.json({ error: "courseSlug mancante" }, { status: 400 });
+  }
+
+  if (!["1day", "1week", "1month", "forever"].includes(duration)) {
+    return NextResponse.json({ error: "Durata non valida" }, { status: 400 });
   }
 
   // Verify course exists
@@ -86,9 +93,13 @@ export async function POST(req: NextRequest) {
   }
 
   const created = await prisma.courseCode.createMany({
-    data: codes.map((code) => ({ code, courseSlug })),
+    data: codes.map((code) => ({ code, courseSlug, duration })),
     skipDuplicates: true,
   });
 
-  return NextResponse.json({ ok: true, created: created.count, codes });
+  const durationLabel: Record<string, string> = {
+    "1day": "1 giorno", "1week": "1 settimana", "1month": "1 mese", "forever": "per sempre"
+  };
+
+  return NextResponse.json({ ok: true, created: created.count, codes, duration: durationLabel[duration] || duration });
 }

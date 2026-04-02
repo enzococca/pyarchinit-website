@@ -47,11 +47,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Hai già accesso a questo corso" }, { status: 409 });
   }
 
+  // Calculate expiration based on code duration
+  let expiresAt: Date | null = null;
+  const now = new Date();
+  const duration = (courseCode as any).duration || "forever";
+  if (duration === "1day") {
+    expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  } else if (duration === "1week") {
+    expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  } else if (duration === "1month") {
+    expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  }
+  // "forever" → expiresAt stays null
+
   // Mark code as used and create payment atomically
   await prisma.$transaction([
     prisma.courseCode.update({
       where: { code },
-      data: { usedBy: userId, usedAt: new Date() },
+      data: { usedBy: userId, usedAt: now },
     }),
     prisma.coursePayment.create({
       data: {
@@ -62,6 +75,7 @@ export async function POST(req: NextRequest) {
         provider: "code",
         providerId: code,
         status: "completed",
+        expiresAt,
       },
     }),
   ]);

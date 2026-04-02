@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Tag, RefreshCw, Copy, Check } from "lucide-react";
+import { Tag, RefreshCw, Copy, Check, Ban } from "lucide-react";
 
 interface CodeEntry {
   id: string;
   code: string;
   courseSlug: string;
+  duration: string;
   available: boolean;
   usedAt: string | null;
   usedBy: { id: string; name: string | null; email: string | null } | null;
@@ -18,11 +19,26 @@ interface CodesPanelProps {
   courseTitle: string;
 }
 
+const DURATION_OPTIONS = [
+  { value: "forever", label: "Per sempre" },
+  { value: "1month", label: "1 mese" },
+  { value: "1week", label: "1 settimana" },
+  { value: "1day", label: "1 giorno" },
+];
+
+const DURATION_LABELS: Record<string, string> = {
+  forever: "Permanente",
+  "1month": "1 mese",
+  "1week": "1 settimana",
+  "1day": "1 giorno",
+};
+
 export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
   const [codes, setCodes] = useState<CodeEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [count, setCount] = useState(5);
+  const [duration, setDuration] = useState("forever");
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -33,11 +49,10 @@ export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
     try {
       const res = await fetch(`/api/learn/codes?courseSlug=${encodeURIComponent(courseSlug)}`);
       if (!res.ok) throw new Error("Errore nel caricamento");
-      const data = await res.json();
-      setCodes(data);
+      setCodes(await res.json());
       setLoaded(true);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Errore");
     } finally {
       setLoading(false);
     }
@@ -50,17 +65,29 @@ export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
       const res = await fetch("/api/learn/codes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseSlug, count }),
+        body: JSON.stringify({ courseSlug, count, duration }),
       });
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error ?? "Errore");
-      }
+      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
       await loadCodes();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Errore");
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const revokeAccess = async (userId: string) => {
+    if (!confirm("Revocare l'accesso a questo utente?")) return;
+    try {
+      const res = await fetch("/api/learn/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, courseSlug }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      await loadCodes();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Errore");
     }
   };
 
@@ -88,7 +115,7 @@ export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
       </div>
 
       {/* Generate controls */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         {!loaded ? (
           <button
             onClick={loadCodes}
@@ -117,6 +144,15 @@ export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
             onChange={(e) => setCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
             className="w-14 bg-primary border border-sand/20 rounded px-2 py-1.5 text-xs font-mono text-sand focus:outline-none focus:border-teal/40"
           />
+          <select
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            className="bg-primary border border-sand/20 rounded px-2 py-1.5 text-xs font-mono text-sand focus:outline-none focus:border-teal/40"
+          >
+            {DURATION_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
           <button
             onClick={generateCodes}
             disabled={generating}
@@ -128,20 +164,19 @@ export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
         </div>
       </div>
 
-      {error && (
-        <p className="text-red-400 text-xs font-mono mb-3">{error}</p>
-      )}
+      {error && <p className="text-red-400 text-xs font-mono mb-3">{error}</p>}
 
       {loaded && codes.length === 0 && (
         <p className="text-sand/30 text-sm text-center py-4">Nessun codice generato.</p>
       )}
 
       {codes.length > 0 && (
-        <div className="overflow-auto max-h-64 rounded-lg border border-sand/10">
+        <div className="overflow-auto max-h-80 rounded-lg border border-sand/10">
           <table className="w-full text-xs font-mono">
             <thead>
               <tr className="border-b border-sand/10 bg-primary/40">
                 <th className="text-left px-3 py-2 text-teal/50 uppercase tracking-widest">Codice</th>
+                <th className="text-left px-3 py-2 text-teal/50 uppercase tracking-widest hidden sm:table-cell">Durata</th>
                 <th className="text-left px-3 py-2 text-teal/50 uppercase tracking-widest hidden sm:table-cell">Stato</th>
                 <th className="text-left px-3 py-2 text-teal/50 uppercase tracking-widest hidden md:table-cell">Usato da</th>
                 <th className="px-3 py-2"></th>
@@ -151,37 +186,34 @@ export function CodesPanel({ courseSlug, courseTitle }: CodesPanelProps) {
               {codes.map((c) => (
                 <tr key={c.id} className="hover:bg-sand/3 transition-colors">
                   <td className="px-3 py-2 text-sand">{c.code}</td>
+                  <td className="px-3 py-2 hidden sm:table-cell text-sand/40">
+                    {DURATION_LABELS[c.duration] || c.duration}
+                  </td>
                   <td className="px-3 py-2 hidden sm:table-cell">
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full ${
-                        c.available ? "bg-teal/10 text-teal" : "bg-sand/10 text-sand/40"
-                      }`}
-                    >
+                    <span className={`px-1.5 py-0.5 rounded-full ${c.available ? "bg-teal/10 text-teal" : "bg-sand/10 text-sand/40"}`}>
                       {c.available ? "Disponibile" : "Usato"}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-sand/40 hidden md:table-cell">
                     {c.usedBy ? (c.usedBy.name ?? c.usedBy.email ?? c.usedBy.id) : "—"}
-                    {c.usedAt && (
-                      <span className="text-sand/20 ml-1">
-                        ({new Date(c.usedAt).toLocaleDateString("it-IT")})
-                      </span>
-                    )}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    {c.available && (
-                      <button
-                        onClick={() => copyCode(c.code)}
-                        className="p-1 text-sand/30 hover:text-sand transition-colors"
-                        title="Copia"
-                      >
-                        {copiedCode === c.code ? (
-                          <Check size={12} className="text-teal" />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1 justify-end">
+                      {c.available && (
+                        <button onClick={() => copyCode(c.code)} className="p-1 text-sand/30 hover:text-sand transition" title="Copia">
+                          {copiedCode === c.code ? <Check size={12} className="text-teal" /> : <Copy size={12} />}
+                        </button>
+                      )}
+                      {!c.available && c.usedBy && (
+                        <button
+                          onClick={() => revokeAccess(c.usedBy!.id)}
+                          className="p-1 text-red-400/40 hover:text-red-400 transition"
+                          title="Revoca accesso"
+                        >
+                          <Ban size={12} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
