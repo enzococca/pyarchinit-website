@@ -41,12 +41,12 @@ export function Navbar() {
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden xl:flex items-center gap-5">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-sand/70 hover:text-sand transition-colors"
+                  className="text-[13px] text-sand/70 hover:text-sand transition-colors whitespace-nowrap"
                 >
                   {link.label}
                 </Link>
@@ -60,12 +60,12 @@ export function Navbar() {
               <UserMenu />
               <Link
                 href="/corsi"
-                className="hidden md:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
+                className="hidden xl:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
               >
                 {t("nav.inizia")}
               </Link>
               <button
-                className="md:hidden p-2 text-sand/70 hover:text-sand transition-colors"
+                className="xl:hidden p-2 text-sand/70 hover:text-sand transition-colors"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Apri menu"
               >
