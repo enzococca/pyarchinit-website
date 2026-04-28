@@ -4,11 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Download,
-  Settings,
   Search,
   CheckCircle2,
   Package,
-  GitFork,
   ExternalLink,
   AlertCircle,
   ArrowRight,
@@ -34,31 +32,24 @@ export default async function InstallazionePage() {
     },
     {
       n: 2,
-      icon: Settings,
+      icon: Search,
       title: t(locale, "install.step2.title"),
       desc: t(locale, "install.step2.desc"),
       tip: t(locale, "install.step2.tip"),
     },
     {
       n: 3,
-      icon: Search,
+      icon: Package,
       title: t(locale, "install.step3.title"),
       desc: t(locale, "install.step3.desc"),
       tip: t(locale, "install.step3.tip"),
     },
     {
       n: 4,
-      icon: Package,
+      icon: CheckCircle2,
       title: t(locale, "install.step4.title"),
       desc: t(locale, "install.step4.desc"),
       tip: t(locale, "install.step4.tip"),
-    },
-    {
-      n: 5,
-      icon: CheckCircle2,
-      title: t(locale, "install.step5.title"),
-      desc: t(locale, "install.step5.desc"),
-      tip: t(locale, "install.step5.tip"),
     },
   ];
 
@@ -102,12 +93,12 @@ export default async function InstallazionePage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <a
-              href="https://github.com/pyarchinit/pyarchinit-installer"
+              href="https://plugins.qgis.org/plugins/pyarchinit_installer/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-teal text-primary font-mono text-sm font-bold px-5 py-2.5 rounded-full hover:bg-teal/90 transition"
             >
-              <GitFork size={14} /> {t(locale, "install.cta.github")}
+              <Package size={14} /> {t(locale, "install.cta.plugin")}
             </a>
             <a
               href="https://qgis.org/download"

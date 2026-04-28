@@ -108,8 +108,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "install.label": "Guida all'installazione",
     "install.title": "Installa pyArchInit con il plugin QGIS Installer",
     "install.subtitle":
-      "Il modo più semplice per installare pyArchInit e tutte le sue dipendenze è il plugin ufficiale pyArchInit Installer per QGIS. Pochi click e sei pronto a lavorare.",
-    "install.cta.github": "Plugin su GitHub",
+      "Il modo più semplice per installare pyArchInit e tutte le sue dipendenze è il plugin ufficiale pyArchInit Installer, disponibile direttamente dal repository ufficiale di QGIS. Pochi click e sei pronto a lavorare.",
+    "install.cta.plugin": "Pagina plugin su QGIS",
     "install.cta.qgis": "Scarica QGIS",
     "install.req.title": "Requisiti",
     "install.req.qgis": "QGIS LTR ≥ 3.34 (consigliato) installato sul tuo sistema",
@@ -118,36 +118,31 @@ const translations: Record<Locale, Record<string, string>> = {
     "install.req.net": "Connessione internet (la prima installazione scarica le dipendenze)",
     "install.steps.title": "Procedura passo-passo",
     "install.steps.subtitle":
-      "Segui questi 5 passaggi: il plugin pyArchInit Installer si occuperà di tutto, comprese le librerie Python necessarie (psycopg2, sqlalchemy, reportlab, ecc.).",
+      "Segui questi 4 passaggi: il plugin pyArchInit Installer si occuperà di tutto, comprese le librerie Python necessarie (psycopg2, sqlalchemy, reportlab, ecc.).",
     "install.step1.title": "Apri QGIS e vai al gestore dei plugin",
     "install.step1.desc":
       "Avvia QGIS e dal menu in alto seleziona Plugins → Manage and Install Plugins... (in italiano: Plugin → Gestisci e installa plugin...).",
     "install.step1.tip":
       "Se non vedi il menu Plugins, assicurati di usare QGIS Desktop e non QGIS Browser.",
-    "install.step2.title": "Aggiungi il repository di pyArchInit",
+    "install.step2.title": "Cerca pyArchInit Installer",
     "install.step2.desc":
-      "Nella finestra che si apre, vai sulla scheda Settings e clicca Add... per aggiungere un nuovo repository.\n\nNome: pyArchInit\nURL: https://www.pyarchinit.org/repository/plugins.xml",
+      "Vai sulla scheda All e nella barra di ricerca digita \"pyarchinit\". Vedrai il plugin pyArchInit Installer con il logo ufficiale, già disponibile dal repository ufficiale QGIS.",
     "install.step2.tip":
-      "Lascia abilitato il repository e clicca OK. Il plugin Installer non è ancora pubblicato sul repository ufficiale di QGIS, quindi questo passaggio è obbligatorio.",
-    "install.step3.title": "Cerca pyArchInit Installer",
-    "install.step3.desc":
-      "Vai sulla scheda All e nella barra di ricerca digita \"pyarchinit\". Dovresti vedere il plugin pyArchInit Installer con il logo ufficiale.",
-    "install.step3.tip":
       "Se non lo trovi, abilita la voce \"Show also experimental plugins\" nelle impostazioni del Plugin Manager.",
-    "install.step4.title": "Installa il plugin Installer",
-    "install.step4.desc":
+    "install.step3.title": "Installa il plugin Installer",
+    "install.step3.desc":
       "Seleziona pyArchInit Installer e clicca Install Plugin. QGIS scaricherà il plugin e lo attiverà automaticamente.",
-    "install.step4.tip":
+    "install.step3.tip":
       "Al primo avvio il plugin chiederà i permessi per installare le librerie Python necessarie: accetta per procedere.",
-    "install.step5.title": "Avvia pyArchInit Installer e completa l'installazione",
-    "install.step5.desc":
+    "install.step4.title": "Avvia pyArchInit Installer e completa l'installazione",
+    "install.step4.desc":
       "Apri il pannello pyArchInit Installer (menu Plugins → pyArchInit Installer) e clicca Install pyArchInit. Il wizard scaricherà l'ultima release di pyArchInit, installerà le dipendenze Python e configurerà tutto.\n\nAl termine riavvia QGIS: troverai pyArchInit nella barra dei plugin pronto all'uso.",
-    "install.step5.tip":
+    "install.step4.tip":
       "Su macOS e Linux potrebbe essere richiesta la password di amministratore per installare alcune dipendenze di sistema.",
     "install.trouble.title": "Risoluzione problemi",
-    "install.trouble.q1": "Il repository non si carica",
+    "install.trouble.q1": "Non vedo il plugin nella ricerca",
     "install.trouble.a1":
-      "Verifica la connessione internet e controlla di aver inserito l'URL esatto: https://www.pyarchinit.org/repository/plugins.xml — eventuali spazi o caratteri in più impediscono il caricamento.",
+      "Aggiorna la lista dei plugin: dal Plugin Manager clicca \"Reload repository\". Se ancora non lo trovi, abilita \"Show also experimental plugins\" nelle Settings del Plugin Manager.",
     "install.trouble.q2": "Errore \"ModuleNotFoundError\" all'avvio",
     "install.trouble.a2":
       "Significa che alcune librerie Python non sono state installate. Apri di nuovo pyArchInit Installer e clicca su Reinstall dependencies. Su Windows assicurati di aver eseguito QGIS come amministratore la prima volta.",
@@ -477,8 +472,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "install.label": "Installation guide",
     "install.title": "Install pyArchInit with the QGIS Installer plugin",
     "install.subtitle":
-      "The easiest way to install pyArchInit and all its dependencies is through the official pyArchInit Installer plugin for QGIS. A few clicks and you're ready to go.",
-    "install.cta.github": "Plugin on GitHub",
+      "The easiest way to install pyArchInit and all its dependencies is through the official pyArchInit Installer plugin, available straight from the official QGIS plugin repository. A few clicks and you're ready to go.",
+    "install.cta.plugin": "Plugin page on QGIS",
     "install.cta.qgis": "Download QGIS",
     "install.req.title": "Requirements",
     "install.req.qgis": "QGIS LTR ≥ 3.34 (recommended) installed on your system",
@@ -487,36 +482,31 @@ const translations: Record<Locale, Record<string, string>> = {
     "install.req.net": "Internet connection (the first install downloads dependencies)",
     "install.steps.title": "Step-by-step procedure",
     "install.steps.subtitle":
-      "Follow these 5 steps: the pyArchInit Installer plugin will take care of everything, including the required Python libraries (psycopg2, sqlalchemy, reportlab, etc.).",
+      "Follow these 4 steps: the pyArchInit Installer plugin will take care of everything, including the required Python libraries (psycopg2, sqlalchemy, reportlab, etc.).",
     "install.step1.title": "Open QGIS and launch the plugin manager",
     "install.step1.desc":
       "Start QGIS and from the top menu choose Plugins → Manage and Install Plugins...",
     "install.step1.tip":
       "If you don't see the Plugins menu, make sure you're using QGIS Desktop, not QGIS Browser.",
-    "install.step2.title": "Add the pyArchInit repository",
+    "install.step2.title": "Search for pyArchInit Installer",
     "install.step2.desc":
-      "In the dialog, switch to the Settings tab and click Add... to register a new repository.\n\nName: pyArchInit\nURL: https://www.pyarchinit.org/repository/plugins.xml",
+      "Switch to the All tab and type \"pyarchinit\" in the search field. You'll see the pyArchInit Installer plugin with the official logo, already available from the official QGIS repository.",
     "install.step2.tip":
-      "Keep the repository enabled and click OK. The Installer plugin is not yet on the official QGIS repository, so this step is mandatory.",
-    "install.step3.title": "Search for pyArchInit Installer",
-    "install.step3.desc":
-      "Switch to the All tab and type \"pyarchinit\" in the search field. You should see the pyArchInit Installer plugin with the official logo.",
-    "install.step3.tip":
       "If you can't find it, enable \"Show also experimental plugins\" in the Plugin Manager settings.",
-    "install.step4.title": "Install the Installer plugin",
-    "install.step4.desc":
+    "install.step3.title": "Install the Installer plugin",
+    "install.step3.desc":
       "Select pyArchInit Installer and click Install Plugin. QGIS will download and activate it automatically.",
-    "install.step4.tip":
+    "install.step3.tip":
       "On first launch the plugin will ask for permission to install the required Python libraries — accept to continue.",
-    "install.step5.title": "Run pyArchInit Installer and complete setup",
-    "install.step5.desc":
+    "install.step4.title": "Run pyArchInit Installer and complete setup",
+    "install.step4.desc":
       "Open the pyArchInit Installer panel (Plugins → pyArchInit Installer) and click Install pyArchInit. The wizard downloads the latest release, installs all Python dependencies and wires everything up.\n\nWhen it's done, restart QGIS: pyArchInit will appear in the plugin toolbar, ready to use.",
-    "install.step5.tip":
+    "install.step4.tip":
       "On macOS and Linux you may be prompted for the admin password to install some system dependencies.",
     "install.trouble.title": "Troubleshooting",
-    "install.trouble.q1": "The repository won't load",
+    "install.trouble.q1": "I can't see the plugin in the search results",
     "install.trouble.a1":
-      "Check your internet connection and verify the exact URL: https://www.pyarchinit.org/repository/plugins.xml — extra spaces or characters will prevent it from loading.",
+      "Refresh the plugin list: from the Plugin Manager click \"Reload repository\". If it still doesn't show, enable \"Show also experimental plugins\" in the Plugin Manager Settings.",
     "install.trouble.q2": "\"ModuleNotFoundError\" on startup",
     "install.trouble.a2":
       "This means some Python libraries weren't installed. Re-open pyArchInit Installer and click Reinstall dependencies. On Windows, make sure you ran QGIS as administrator the first time.",
