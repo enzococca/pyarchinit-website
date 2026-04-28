@@ -33,15 +33,15 @@ export function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-primary/80 border-b border-sand/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 gap-4 xl:gap-8">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 shrink-0">
               <Image src="/images/logo_pyarchinit_official.png" alt="pyArchInit" width={32} height={32} />
               <span className="text-teal font-mono font-bold text-lg">pyArchInit</span>
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden xl:flex items-center gap-5">
+            <nav className="hidden xl:flex items-center justify-center gap-x-4 2xl:gap-x-5 flex-1 min-w-0">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -54,13 +54,13 @@ export function Navbar() {
             </nav>
 
             {/* CTA + login + locale switcher + hamburger */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               <SmartSearchTrigger onClick={openSearch} />
               <LocaleSwitcher />
               <UserMenu />
               <Link
                 href="/corsi"
-                className="hidden xl:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
+                className="hidden 2xl:inline-flex items-center px-4 py-2 rounded-card text-sm font-medium bg-teal text-primary hover:bg-teal/90 transition-colors"
               >
                 {t("nav.inizia")}
               </Link>
