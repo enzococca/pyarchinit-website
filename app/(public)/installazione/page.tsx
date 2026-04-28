@@ -29,6 +29,7 @@ export default async function InstallazionePage() {
       title: t(locale, "install.step1.title"),
       desc: t(locale, "install.step1.desc"),
       tip: t(locale, "install.step1.tip"),
+      image: null,
     },
     {
       n: 2,
@@ -36,6 +37,12 @@ export default async function InstallazionePage() {
       title: t(locale, "install.step2.title"),
       desc: t(locale, "install.step2.desc"),
       tip: t(locale, "install.step2.tip"),
+      image: {
+        src: "/images/install/step2-search.png",
+        alt: t(locale, "install.step2.img_alt"),
+        w: 1170,
+        h: 720,
+      },
     },
     {
       n: 3,
@@ -43,6 +50,12 @@ export default async function InstallazionePage() {
       title: t(locale, "install.step3.title"),
       desc: t(locale, "install.step3.desc"),
       tip: t(locale, "install.step3.tip"),
+      image: {
+        src: "/images/install/step3-toolbar.png",
+        alt: t(locale, "install.step3.img_alt"),
+        w: 460,
+        h: 440,
+      },
     },
     {
       n: 4,
@@ -50,6 +63,12 @@ export default async function InstallazionePage() {
       title: t(locale, "install.step4.title"),
       desc: t(locale, "install.step4.desc"),
       tip: t(locale, "install.step4.tip"),
+      image: {
+        src: "/images/install/step4-dialog.png",
+        alt: t(locale, "install.step4.img_alt"),
+        w: 980,
+        h: 1230,
+      },
     },
   ];
 
@@ -163,7 +182,7 @@ export default async function InstallazionePage() {
                       {s.desc}
                     </p>
                     {s.tip && (
-                      <div className="flex items-start gap-2 bg-primary/40 border-l-2 border-ochre/40 px-3 py-2 rounded">
+                      <div className="flex items-start gap-2 bg-primary/40 border-l-2 border-ochre/40 px-3 py-2 rounded mb-4">
                         <AlertCircle
                           size={13}
                           className="text-ochre/70 mt-0.5 shrink-0"
@@ -171,6 +190,17 @@ export default async function InstallazionePage() {
                         <p className="text-sand/55 text-xs leading-relaxed">
                           {s.tip}
                         </p>
+                      </div>
+                    )}
+                    {s.image && (
+                      <div className="mt-2 rounded-lg overflow-hidden border border-sand/10 bg-primary/30">
+                        <Image
+                          src={s.image.src}
+                          alt={s.image.alt}
+                          width={s.image.w}
+                          height={s.image.h}
+                          className="w-full h-auto"
+                        />
                       </div>
                     )}
                   </div>
