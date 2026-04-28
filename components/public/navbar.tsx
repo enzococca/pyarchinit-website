@@ -21,6 +21,7 @@ export function Navbar() {
     { href: "/corsi", label: t("nav.corsi") },
     { href: "/impara", label: t("nav.impara") },
     { href: "/docs", label: t("nav.docs") },
+    { href: "/installazione", label: t("nav.installazione") },
     { href: "/video", label: t("nav.video") },
     { href: "/servizi", label: t("nav.servizi") },
     { href: "/community", label: t("nav.community") },

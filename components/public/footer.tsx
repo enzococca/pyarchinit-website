@@ -37,6 +37,7 @@ export function Footer({ cmsPages = [], locale = "it" }: FooterProps) {
       title: t(locale, "footer.community"),
       links: [
         { href: "https://github.com/pyarchinit", label: t(locale, "footer.community.github"), external: true },
+        { href: "/installazione", label: t(locale, "nav.installazione") },
         { href: "/docs", label: t(locale, "footer.community.docs") },
         { href: "/community#contribuire", label: t(locale, "footer.community.contribuire") },
         { href: "/community#discussioni", label: t(locale, "footer.community.discussioni") },
