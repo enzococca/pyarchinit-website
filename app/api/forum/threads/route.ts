@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth-utils";
+import { ensureThreadSubscription, notifyNewThread } from "@/lib/forum-notify";
 
 const PAGE_SIZE = 20;
 
@@ -70,6 +71,19 @@ export async function POST(req: NextRequest) {
     data: { title, slug, content, categoryId, userId },
     include: { category: true },
   });
+
+  // Auto-follow: il creatore segue il proprio thread (per le risposte future)
+  await ensureThreadSubscription(userId, thread.id).catch(console.error);
+
+  // Notifica (in background) i follower della categoria, tranne il creatore
+  notifyNewThread({
+    categoryId,
+    threadTitle: thread.title,
+    threadSlug: thread.slug,
+    threadContent: content,
+    authorId: userId,
+    authorName: (session.user as { name?: string | null }).name ?? "Qualcuno",
+  }).catch(console.error);
 
   return NextResponse.json(thread, { status: 201 });
 }
