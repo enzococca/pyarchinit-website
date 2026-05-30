@@ -42,7 +42,7 @@ function wrapInTemplate(title: string, content: string): string {
       </div>
       <div style="text-align:center;margin-top:24px;color:#8B7355;font-size:12px;">
         <p>pyArchInit - Piattaforma Open Source per l'Archeologia</p>
-        <p><a href="https://pyarchinit.com" style="color:#00D4AA;">pyarchinit.com</a></p>
+        <p><a href="https://pyarchinit.org" style="color:#00D4AA;">pyarchinit.org</a></p>
       </div>
     </div>
   `;
