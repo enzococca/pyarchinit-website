@@ -5,6 +5,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { LogOut, BookOpen, User, Calendar, Tag } from "lucide-react";
+import { ForumEmailToggle } from "./ForumEmailToggle";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -15,7 +16,7 @@ export default async function AccountPage() {
   const [user, payments] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, createdAt: true, role: true },
+      select: { id: true, name: true, email: true, createdAt: true, role: true, forumEmailOptOut: true },
     }),
     prisma.coursePayment.findMany({
       where: { userId, status: "completed" },
@@ -188,6 +189,16 @@ export default async function AccountPage() {
           >
             Vai ai corsi per attivare un codice →
           </Link>
+        </div>
+
+        {/* Notifiche */}
+        <div className="bg-code-bg border border-sand/10 rounded-card p-6 mt-6">
+          <h3 className="font-mono font-semibold text-sand mb-4">Notifiche</h3>
+          <ForumEmailToggle initial={user.forumEmailOptOut} />
+          <p className="text-xs text-sand/40 mt-3">
+            Quando è attivo, ricevi un'email per le nuove risposte alle discussioni che segui
+            e per i nuovi thread nelle categorie che segui.
+          </p>
         </div>
       </div>
     </main>
