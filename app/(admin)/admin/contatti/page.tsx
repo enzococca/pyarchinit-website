@@ -80,7 +80,7 @@ export default function AdminContattiPage() {
     }
 
     const result: Group[] = [];
-    for (const [key, msgs] of map) {
+    map.forEach((msgs, key) => {
       const sorted = [...msgs].sort(
         (a, b) => +new Date(a.createdAt) - +new Date(b.createdAt)
       );
@@ -93,7 +93,7 @@ export default function AdminContattiPage() {
         lastDate: latest.createdAt,
         hasNew: sorted.some((m) => m.status === "NEW"),
       });
-    }
+    });
     result.sort((a, b) => +new Date(b.lastDate) - +new Date(a.lastDate));
     return result;
   }, [contacts]);
