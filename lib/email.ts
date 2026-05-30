@@ -9,9 +9,10 @@ interface EmailOptions {
   subject: string;
   html: string;
   replyTo?: string;
+  headers?: Record<string, string>;
 }
 
-export async function sendEmail({ to, subject, html, replyTo }: EmailOptions) {
+export async function sendEmail({ to, subject, html, replyTo, headers }: EmailOptions) {
   if (!resend) {
     console.log(`[Email skipped - no RESEND_API_KEY] To: ${to}, Subject: ${subject}`);
     return;
@@ -24,6 +25,7 @@ export async function sendEmail({ to, subject, html, replyTo }: EmailOptions) {
     to,
     subject,
     ...(replyTo ? { replyTo } : {}),
+    ...(headers ? { headers } : {}),
     html: wrapInTemplate(subject, html),
   });
 }
