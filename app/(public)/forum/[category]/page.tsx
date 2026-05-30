@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth-utils";
+import { FollowButton } from "../_components/FollowButton";
 import { MessageSquare, Pin, Lock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +30,22 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   const category = await prisma.forumCategory.findUnique({ where: { slug } });
   if (!category) notFound();
+
+  const session = await getSession();
+  const isLoggedIn = !!session?.user;
+  let following = false;
+  if (isLoggedIn) {
+    const sub = await prisma.categorySubscription.findUnique({
+      where: {
+        userId_categoryId: {
+          userId: (session!.user as { id: string }).id,
+          categoryId: category.id,
+        },
+      },
+      select: { id: true },
+    });
+    following = !!sub;
+  }
 
   const [threads, total] = await Promise.all([
     prisma.forumThread.findMany({
@@ -57,14 +75,19 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             <ChevronLeft size={14} />
             Forum
           </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: category.color }}
-            />
-            <h1 className="text-3xl sm:text-4xl font-mono font-bold text-sand">
-              {category.name}
-            </h1>
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-2">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: category.color }}
+              />
+              <h1 className="text-3xl sm:text-4xl font-mono font-bold text-sand">
+                {category.name}
+              </h1>
+            </div>
+            {isLoggedIn && (
+              <FollowButton type="category" id={category.id} initialFollowing={following} />
+            )}
           </div>
           {category.description && (
             <p className="text-sand/60">{category.description}</p>
