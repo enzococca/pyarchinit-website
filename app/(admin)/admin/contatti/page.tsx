@@ -96,17 +96,21 @@ export default function AdminContattiPage() {
 
               <div className="mt-3 flex justify-end">
                 <a
-                  href={`mailto:${contact.email}?subject=${encodeURIComponent(
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                    contact.email
+                  )}&su=${encodeURIComponent(
                     `Re: ${contact.type} — pyArchInit`
                   )}&body=${encodeURIComponent(
                     `Ciao ${contact.name.split(" ")[0]},\n\ngrazie per averci scritto.\n\n\n\n---\nIl tuo messaggio:\n${contact.message}`
                   )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => {
                     if (contact.status !== "REPLIED") updateStatus(contact.id, "REPLIED");
                   }}
                   className="inline-flex items-center gap-1.5 text-xs font-mono text-teal border border-teal/30 hover:border-teal/60 hover:bg-teal/5 rounded-full px-3 py-1 transition"
                 >
-                  <Reply size={13} /> Rispondi via email
+                  <Reply size={13} /> Rispondi su Gmail
                 </a>
               </div>
             </div>
