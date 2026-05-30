@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
   if (process.env.ADMIN_EMAIL) {
     await sendEmail({
       to: process.env.ADMIN_EMAIL,
+      replyTo: email,
       subject: `Nuovo messaggio di contatto da ${name}`,
       html: `
         <p style="color:#E8DCC8;margin-bottom:8px;">

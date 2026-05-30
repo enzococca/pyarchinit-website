@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Mail } from "lucide-react";
+import { Mail, Reply } from "lucide-react";
 
 interface Contact {
   id: string;
@@ -93,6 +93,22 @@ export default function AdminContattiPage() {
                 </p>
               )}
               <p className="text-sm text-sand/70 whitespace-pre-wrap">{contact.message}</p>
+
+              <div className="mt-3 flex justify-end">
+                <a
+                  href={`mailto:${contact.email}?subject=${encodeURIComponent(
+                    `Re: ${contact.type} — pyArchInit`
+                  )}&body=${encodeURIComponent(
+                    `Ciao ${contact.name.split(" ")[0]},\n\ngrazie per averci scritto.\n\n\n\n---\nIl tuo messaggio:\n${contact.message}`
+                  )}`}
+                  onClick={() => {
+                    if (contact.status !== "REPLIED") updateStatus(contact.id, "REPLIED");
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs font-mono text-teal border border-teal/30 hover:border-teal/60 hover:bg-teal/5 rounded-full px-3 py-1 transition"
+                >
+                  <Reply size={13} /> Rispondi via email
+                </a>
+              </div>
             </div>
           ))}
         </div>
