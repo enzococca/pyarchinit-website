@@ -37,7 +37,7 @@ function wrapInTemplate(title: string, content: string): string {
         <h1 style="font-family:'JetBrains Mono',monospace;color:#00D4AA;font-size:20px;margin:0;">pyArchInit</h1>
       </div>
       <div style="background:#1A1E2E;border-radius:8px;padding:24px;">
-        <h2 style="color:#E8DCC8;font-size:18px;margin-top:0;">${title}</h2>
+        <h2 style="color:#E8DCC8;font-size:18px;margin-top:0;">${title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</h2>
         ${content}
       </div>
       <div style="text-align:center;margin-top:24px;color:#8B7355;font-size:12px;">
