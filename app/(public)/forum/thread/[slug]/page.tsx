@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth-utils";
 import { ChevronLeft, Eye, MessageSquare, Pin, Lock } from "lucide-react";
 import { ReplyForm } from "./ReplyForm";
+import { FollowButton } from "../../_components/FollowButton";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,20 @@ export default async function ThreadPage({ params }: Props) {
   const session = await getSession();
   const isLoggedIn = !!session?.user;
 
+  let following = false;
+  if (isLoggedIn) {
+    const sub = await prisma.threadSubscription.findUnique({
+      where: {
+        userId_threadId: {
+          userId: (session!.user as { id: string }).id,
+          threadId: thread.id,
+        },
+      },
+      select: { id: true },
+    });
+    following = !!sub;
+  }
+
   function getInitial(user: { name?: string | null; email: string }) {
     return (user.name ?? user.email).charAt(0).toUpperCase();
   }
@@ -78,17 +93,22 @@ export default async function ThreadPage({ params }: Props) {
               {thread.title}
             </h1>
           </div>
-          <div className="flex items-center gap-4 text-xs text-sand/40">
-            <span>{thread.user.name ?? thread.user.email}</span>
-            <span>{new Date(thread.createdAt).toLocaleDateString("it-IT")}</span>
-            <span className="flex items-center gap-1">
-              <Eye size={12} />
-              {thread.views}
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageSquare size={12} />
-              {thread.replies.length}
-            </span>
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4 text-xs text-sand/40">
+              <span>{thread.user.name ?? thread.user.email}</span>
+              <span>{new Date(thread.createdAt).toLocaleDateString("it-IT")}</span>
+              <span className="flex items-center gap-1">
+                <Eye size={12} />
+                {thread.views}
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageSquare size={12} />
+                {thread.replies.length}
+              </span>
+            </div>
+            {isLoggedIn && (
+              <FollowButton type="thread" id={thread.id} initialFollowing={following} />
+            )}
           </div>
         </div>
       </section>
