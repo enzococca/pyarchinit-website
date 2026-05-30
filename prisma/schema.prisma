@@ -16,6 +16,7 @@ model User {
   passwordHash  String?
   image         String?
   role          UserRole  @default(STUDENT)
+  forumEmailOptOut Boolean @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
@@ -26,6 +27,8 @@ model User {
   forumReplies  ForumReply[]
   interactiveProgress InteractiveLessonProgress[]
   coursePayments CoursePayment[]
+  threadSubscriptions   ThreadSubscription[]
+  categorySubscriptions CategorySubscription[]
 }
 
 enum UserRole {
@@ -279,6 +282,7 @@ model ForumCategory {
   order       Int    @default(0)
   color       String @default("#00D4AA")
   threads     ForumThread[]
+  subscriptions CategorySubscription[]
 }
 
 model ForumThread {
@@ -297,6 +301,7 @@ model ForumThread {
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   replies    ForumReply[]
+  subscriptions ThreadSubscription[]
 
   @@index([categoryId])
   @@index([userId])
@@ -315,6 +320,34 @@ model ForumReply {
 
   @@index([threadId])
   @@index([userId])
+}
+
+model ThreadSubscription {
+  id               String      @id @default(cuid())
+  userId           String
+  threadId         String
+  unsubscribeToken String      @unique @default(cuid())
+  createdAt        DateTime    @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, threadId])
+  @@index([threadId])
+}
+
+model CategorySubscription {
+  id               String        @id @default(cuid())
+  userId           String
+  categoryId       String
+  unsubscribeToken String        @unique @default(cuid())
+  createdAt        DateTime      @default(now())
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId])
+  @@index([categoryId])
 }
 
 model Testimonial {
