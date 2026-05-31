@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
       name: true,
       email: true,
       createdAt: true,
+      banned: true,
       enrollments: {
         select: {
           id: true,
@@ -44,6 +45,7 @@ export async function GET(req: NextRequest) {
     name: student.name,
     email: student.email,
     createdAt: student.createdAt,
+    banned: student.banned,
     enrollments: student.enrollments,
     completedLessons: student.lessonProgress.length,
   }));
@@ -71,4 +73,34 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(enrollment, { status: 201 });
+}
+
+
+export async function PATCH(req: NextRequest) {
+  await requireAdmin();
+
+  const { userId, banned } = await req.json();
+  if (!userId || typeof banned !== "boolean") {
+    return NextResponse.json(
+      { error: "userId e banned (boolean) sono obbligatori" },
+      { status: 400 }
+    );
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (!target) {
+    return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
+  }
+  if (target.role === "ADMIN") {
+    return NextResponse.json(
+      { error: "Non puoi bannare un amministratore" },
+      { status: 403 }
+    );
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { banned } });
+  return NextResponse.json({ userId, banned });
 }

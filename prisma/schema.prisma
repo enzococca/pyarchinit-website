@@ -17,6 +17,7 @@ model User {
   image         String?
   role          UserRole  @default(STUDENT)
   forumEmailOptOut Boolean @default(false)
+  banned        Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]

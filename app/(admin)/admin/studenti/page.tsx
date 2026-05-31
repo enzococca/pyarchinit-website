@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Users, UserPlus } from "lucide-react";
+import { Users, UserPlus, Ban } from "lucide-react";
 
 interface CourseRef {
   id: string;
@@ -21,6 +21,7 @@ interface Student {
   name: string | null;
   email: string;
   createdAt: string;
+  banned: boolean;
   enrollments: EnrollmentRef[];
   completedLessons: number;
 }
@@ -56,6 +57,22 @@ export default function AdminStudentiPage() {
     setEnrolling(false);
   };
 
+  const toggleBan = async (userId: string, banned: boolean) => {
+    const res = await fetch("/api/students", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, banned }),
+    });
+    if (res.ok) {
+      setStudents((prev) =>
+        prev.map((s) => (s.id === userId ? { ...s, banned } : s))
+      );
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "Errore");
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -87,8 +104,13 @@ export default function AdminStudentiPage() {
             >
               <div className="flex items-start justify-between gap-4 mb-2">
                 <div>
-                  <p className="text-sm font-medium text-sand">
+                  <p className="text-sm font-medium text-sand flex items-center gap-2">
                     {student.name ?? "Senza nome"}
+                    {student.banned && (
+                      <span className="text-[10px] font-mono uppercase tracking-wide text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full">
+                        Bannato
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs text-sand/50">{student.email}</p>
                 </div>
@@ -99,6 +121,17 @@ export default function AdminStudentiPage() {
                   <span className="text-xs text-sand/40 bg-sand/5 px-2 py-0.5 rounded-full border border-sand/10">
                     {student.completedLessons} lezioni completate
                   </span>
+                  <button
+                    onClick={() => toggleBan(student.id, !student.banned)}
+                    className={`flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full border transition ${
+                      student.banned
+                        ? "text-teal border-teal/30 hover:bg-teal/5"
+                        : "text-terracotta border-terracotta/30 hover:bg-terracotta/5"
+                    }`}
+                  >
+                    <Ban size={12} />
+                    {student.banned ? "Sbanna" : "Banna"}
+                  </button>
                 </div>
               </div>
 

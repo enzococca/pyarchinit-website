@@ -25,6 +25,15 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = (session.user as { id: string }).id;
+
+  const me = await prisma.user.findUnique({ where: { id: userId }, select: { banned: true } });
+  if (me?.banned) {
+    return NextResponse.json(
+      { error: "Sei stato escluso dal forum e non puoi pubblicare." },
+      { status: 403 }
+    );
+  }
+
   const reply = await prisma.forumReply.create({
     data: { content, threadId, userId },
     include: {
