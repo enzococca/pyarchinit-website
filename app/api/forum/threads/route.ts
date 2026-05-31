@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const { title, content, categoryId } = await req.json();
+  const { title, content, categoryId, attachmentIds } = await req.json();
   if (!title || !content || !categoryId) {
     return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
   }
@@ -83,6 +83,13 @@ export async function POST(req: NextRequest) {
 
   // Auto-follow: il creatore segue il proprio thread (per le risposte future)
   await ensureThreadSubscription(userId, thread.id).catch(console.error);
+
+  if (Array.isArray(attachmentIds) && attachmentIds.length > 0) {
+    await prisma.forumAttachment.updateMany({
+      where: { id: { in: attachmentIds.slice(0, 4) }, uploaderId: userId, threadId: null, replyId: null },
+      data: { threadId: thread.id },
+    });
+  }
 
   // Notifica (in background) i follower della categoria, tranne il creatore
   notifyNewThread({
