@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Send } from "lucide-react";
+import { ImageAttach } from "../_components/ImageAttach";
 
 interface Category {
   id: string;
@@ -19,6 +20,7 @@ export default function NuovaDiscussionePage() {
   const [categoryId, setCategoryId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/forum/categories")
@@ -39,7 +41,7 @@ export default function NuovaDiscussionePage() {
     const res = await fetch("/api/forum/threads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content, categoryId }),
+      body: JSON.stringify({ title, content, categoryId, attachmentIds }),
     });
 
     if (res.ok) {
@@ -123,6 +125,12 @@ export default function NuovaDiscussionePage() {
               className="w-full bg-code-bg border border-sand/20 rounded-card px-4 py-3 text-sm text-sand placeholder:text-sand/30 focus:outline-none focus:border-teal/50 resize-y"
               required
             />
+          </div>
+
+          {/* Allegati */}
+          <div>
+            <label className="block text-sm text-sand/60 mb-1.5">Allegati</label>
+            <ImageAttach onChange={setAttachmentIds} />
           </div>
 
           {error && (
