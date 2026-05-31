@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const { content, threadId } = await req.json();
+  const { content, threadId, attachmentIds } = await req.json();
   if (!content || !threadId) {
     return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
   }
@@ -49,6 +49,13 @@ export async function POST(req: NextRequest) {
 
   // Auto-follow: chi risponde inizia a seguire il thread
   await ensureThreadSubscription(userId, threadId).catch(console.error);
+
+  if (Array.isArray(attachmentIds) && attachmentIds.length > 0) {
+    await prisma.forumAttachment.updateMany({
+      where: { id: { in: attachmentIds.slice(0, 4) }, uploaderId: userId, threadId: null, replyId: null },
+      data: { replyId: reply.id },
+    });
+  }
 
   // Notifica (in background) tutti i follower del thread tranne l'autore della risposta
   notifyNewReply({
