@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
+import { ImageAttach } from "../../_components/ImageAttach";
 
 interface Props {
   threadId: string;
@@ -14,6 +15,7 @@ export function ReplyForm({ threadId, locked }: Props) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
 
   if (locked) {
     return (
@@ -32,11 +34,12 @@ export function ReplyForm({ threadId, locked }: Props) {
     const res = await fetch("/api/forum/replies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, threadId }),
+      body: JSON.stringify({ content, threadId, attachmentIds }),
     });
 
     if (res.ok) {
       setContent("");
+      setAttachmentIds([]);
       router.refresh();
     } else {
       const data = await res.json().catch(() => ({}));
@@ -56,6 +59,7 @@ export function ReplyForm({ threadId, locked }: Props) {
         className="w-full bg-code-bg border border-sand/20 rounded-card px-4 py-3 text-sm text-sand placeholder:text-sand/30 focus:outline-none focus:border-teal/50 resize-y"
         required
       />
+      <ImageAttach onChange={setAttachmentIds} />
       {error && <p className="text-sm text-terracotta">{error}</p>}
       <button
         type="submit"
