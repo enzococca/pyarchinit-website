@@ -10,6 +10,7 @@ const nextConfig = {
       { protocol: "https", hostname: "*.b-cdn.net" },
       { protocol: "https", hostname: "flyover.adarteinfo.it" },
       { protocol: "https", hostname: "pyarchinit.org" },
+      { protocol: "https", hostname: "cygykmizdjusppwlpwwv.supabase.co" },
     ],
     localPatterns: [
       { pathname: "/uploads/**" },
