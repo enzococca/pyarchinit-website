@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth-utils";
+import { recheckAnalysis } from "@/lib/virustotal";
 import { ChevronLeft, Eye, MessageSquare, Pin, Lock } from "lucide-react";
 import { ReplyForm } from "./ReplyForm";
 import { FollowButton } from "../../_components/FollowButton";
+import { AttachmentGrid } from "../../_components/AttachmentGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -28,16 +30,35 @@ export default async function ThreadPage({ params }: Props) {
     include: {
       user: { select: { id: true, name: true, email: true } },
       category: true,
+      attachments: true,
       replies: {
         orderBy: { createdAt: "asc" },
         include: {
           user: { select: { id: true, name: true, email: true } },
+          attachments: true,
         },
       },
     },
   });
 
   if (!thread) notFound();
+
+  // Re-check lazy degli allegati ancora in verifica
+  const pending = [
+    ...thread.attachments,
+    ...thread.replies.flatMap((r) => r.attachments),
+  ].filter((a) => a.scanStatus === "PENDING" && a.vtAnalysisId);
+  if (pending.length > 0) {
+    await Promise.all(
+      pending.map(async (a) => {
+        const status = await recheckAnalysis(a.vtAnalysisId!);
+        if (status !== "PENDING") {
+          a.scanStatus = status;
+          await prisma.forumAttachment.update({ where: { id: a.id }, data: { scanStatus: status } });
+        }
+      })
+    );
+  }
 
   // Increment view count
   prisma.forumThread.update({
@@ -132,6 +153,7 @@ export default async function ThreadPage({ params }: Props) {
           >
             {thread.content}
           </div>
+          <AttachmentGrid attachments={thread.attachments} />
         </div>
 
         {/* Replies */}
@@ -157,6 +179,7 @@ export default async function ThreadPage({ params }: Props) {
                   </div>
                 </div>
                 <p className="text-sm text-sand/80 whitespace-pre-wrap">{reply.content}</p>
+                <AttachmentGrid attachments={reply.attachments} />
               </div>
             ))}
           </div>
